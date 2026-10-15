@@ -447,7 +447,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.12)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.13)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -485,9 +485,11 @@
         </div>
     </div>
 
-    <!-- Cấu hình File -->
     <div class="section-box">
-        <div class="section-title">⚙️ Cấu Hình Dữ Liệu Đầu Vào</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div class="section-title" style="margin-bottom:0;">⚙️ Cấu Hình Dữ Liệu Đầu Vào</div>
+            <button type="button" onclick="resetApp()" style="background:#334155; color:#cbd5e1; border:1px solid #475569; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;" title="Làm mới để chọn file khác">🧹 Làm mới</button>
+        </div>
         
         <!-- File Kiot -->
         <div class="file-row">
@@ -628,30 +630,6 @@
         </div>
     </div>
 
-    <!-- Modal Hướng Dẫn Tải File (Khắc phục Save As trống của WebIntoApp) -->
-    <div id="saveAsGuideModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.78); z-index:99999; justify-content:center; align-items:center; padding:16px;">
-        <div style="background:#1e293b; border:2px solid #38bdf8; border-radius:20px; padding:20px 16px; max-width:440px; width:100%; box-shadow:0 25px 50px rgba(0,0,0,0.85); text-align:center; animation:fadeIn 0.25s ease;">
-            <div style="font-size:36px; margin-bottom:8px;">📥</div>
-            <div style="font-size:16px; font-weight:800; color:#38bdf8; margin-bottom:6px;">ĐÃ COPY TÊN FILE MẶC ĐỊNH</div>
-            <div id="saveAsGuideFilename" style="background:#0f172a; border:1px solid rgba(56,189,248,0.3); padding:10px; border-radius:12px; font-family:monospace; font-size:14px; color:#4ade80; font-weight:800; margin-bottom:14px; word-break:break-all;">
-                HOADON_15102026.xlsx
-            </div>
-            <div style="font-size:13px; color:#f1f5f9; line-height:1.6; text-align:left; background:rgba(56,189,248,0.1); border-left:4px solid #38bdf8; padding:10px 12px; border-radius:10px; margin-bottom:16px;">
-                👉 <b>Khi bảng "Save As" của máy hiện ra:</b><br>
-                1. <b>Nhấn giữ</b> vào ô trống.<br>
-                2. Chọn <b>DÁN (Paste)</b> để điền tên có ngày tháng.<br>
-                3. Bấm <b>OK</b> để lưu file về máy!
-            </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button type="button" onclick="copyGuideFilename()" style="background:#0284c7; color:#fff; border:none; padding:12px 8px; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;">
-                    📋 Sao Chép Lại
-                </button>
-                <button type="button" onclick="closeSaveAsGuide()" style="background:#334155; color:#fff; border:none; padding:12px 8px; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;">
-                    Đã Hiểu ✓
-                </button>
-            </div>
-        </div>
-    </div>
 
     <!-- Modal Gửi Zalo / Mở (Khắc phục triệt để không bị hiện Save As) -->
     <div id="zaloShareModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.78); z-index:99999; justify-content:center; align-items:center; padding:16px;">
@@ -960,6 +938,10 @@ try {
     let misaDataRows = [];
     let misaRawWorkbook = null;
     let misaStockColName = null;
+    let misaHeaderIdx = 0;
+    let misaMaColIdx = -1;
+    let misaStockColIdx = -1;
+    let misaActiveSheetName = null;
     let generatedHoadonWb = null;
     let generatedMisaWb = null;
 
@@ -1183,11 +1165,20 @@ try {
                 
                 // Quét tìm sheet có dữ liệu
                 let firstSheet = null;
+                let activeSheetName = null;
                 for (let sName of misaRawWorkbook.SheetNames) {
                     const s = misaRawWorkbook.Sheets[sName];
-                    if (s && s['!ref']) { firstSheet = s; break; }
+                    if (s && s['!ref']) { 
+                        firstSheet = s; 
+                        activeSheetName = sName;
+                        break; 
+                    }
                 }
-                if (!firstSheet) firstSheet = misaRawWorkbook.Sheets[misaRawWorkbook.SheetNames[0]];
+                if (!firstSheet) {
+                    activeSheetName = misaRawWorkbook.SheetNames[0];
+                    firstSheet = misaRawWorkbook.Sheets[activeSheetName];
+                }
+                misaActiveSheetName = activeSheetName;
                 const rows = XLSX.utils.sheet_to_json(firstSheet, {header: 1});
 
                 // Tìm dòng tiêu đề
@@ -1234,6 +1225,9 @@ try {
                     return;
                 }
 
+                misaHeaderIdx = headerIdx;
+                misaMaColIdx = maIdx;
+                misaStockColIdx = stockIdx;
                 misaStockColName = headers[stockIdx];
 
                 // Gộp các dòng trùng mã hàng
@@ -1592,9 +1586,45 @@ try {
             XLSX.utils.book_append_sheet(generatedHoadonWb, wsHoadon, "HOADON");
             XLSX.utils.book_append_sheet(generatedHoadonWb, wsTonKho, "TONKHO");
 
-            // Tạo Workbook MISA đã trừ tồn kho
-            if (misaRawWorkbook) {
-                generatedMisaWb = misaRawWorkbook;
+            // Tạo Workbook MISA đã trừ tồn kho thực tế theo cấu trúc file gốc
+            if (misaRawWorkbook && misaActiveSheetName) {
+                try {
+                    generatedMisaWb = JSON.parse(JSON.stringify(misaRawWorkbook));
+                    const targetSheet = generatedMisaWb.Sheets[misaActiveSheetName];
+                    if (targetSheet && targetSheet['!ref']) {
+                        const daXuatMap = {};
+                        for (let item of misaCopy) {
+                            if (item.daXuat && item.daXuat > 0) {
+                                daXuatMap[item.ma] = item.daXuat;
+                            }
+                        }
+
+                        const range = XLSX.utils.decode_range(targetSheet['!ref']);
+                        for (let R = misaHeaderIdx + 1; R <= range.e.r; R++) {
+                            const maCellAddr = XLSX.utils.encode_cell({ r: R, c: misaMaColIdx });
+                            const maCell = targetSheet[maCellAddr];
+                            if (!maCell || maCell.v == null) continue;
+                            const maVal = String(maCell.v).trim();
+                            if (daXuatMap[maVal] && daXuatMap[maVal] > 0) {
+                                const stockCellAddr = XLSX.utils.encode_cell({ r: R, c: misaStockColIdx });
+                                const stockCell = targetSheet[stockCellAddr];
+                                const oldStock = stockCell ? (parseMoney(stockCell.v) || 0) : 0;
+                                const deduct = Math.min(oldStock, daXuatMap[maVal]);
+                                const newStock = Math.max(0, oldStock - deduct);
+                                daXuatMap[maVal] -= deduct;
+
+                                targetSheet[stockCellAddr] = {
+                                    t: 'n',
+                                    v: newStock,
+                                    w: String(newStock)
+                                };
+                            }
+                        }
+                    }
+                } catch(mEx) {
+                    console.warn("Lỗi cập nhật tồn kho MISA:", mEx);
+                    generatedMisaWb = misaRawWorkbook;
+                }
             }
 
             btnRun.disabled = false;
@@ -1615,38 +1645,7 @@ try {
 
     let lastGeneratedRows = [];
     let lastInvoiceStats = null;
-    let pendingDownloadFilename = "";
     let currentZaloText = "";
-
-    function showSaveAsGuide(filename) {
-        pendingDownloadFilename = filename;
-        const modal = document.getElementById("saveAsGuideModal");
-        const fnEl = document.getElementById("saveAsGuideFilename");
-        if (fnEl) fnEl.textContent = filename;
-        if (modal) modal.style.display = "flex";
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(filename);
-            }
-        } catch(e) {}
-    }
-
-    function closeSaveAsGuide() {
-        const modal = document.getElementById("saveAsGuideModal");
-        if (modal) modal.style.display = "none";
-    }
-
-    function copyGuideFilename() {
-        if (!pendingDownloadFilename) pendingDownloadFilename = getHoaDonFileName();
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(pendingDownloadFilename);
-                alert("📋 Đã sao chép: " + pendingDownloadFilename);
-                return;
-            }
-        } catch(e) {}
-        alert("Tên file: " + pendingDownloadFilename);
-    }
 
     // Hàm tải file Excel chuẩn MIME - Khắc phục triệt để lỗi Android tự đổi tên thành .bin
     function downloadExcelFile(workbook, filename) {
@@ -1817,15 +1816,17 @@ try {
     }
 
     function downloadMisa() {
-        if (!misaRawWorkbook) return;
+        const wb = generatedMisaWb || misaRawWorkbook;
+        if (!wb) return;
         const filename = getMisaFileName();
-        downloadExcelFile(misaRawWorkbook, filename);
+        downloadExcelFile(wb, filename);
     }
 
     function shareMisa() {
-        if (!misaRawWorkbook) return;
+        const wb = generatedMisaWb || misaRawWorkbook;
+        if (!wb) return;
         const filename = getMisaFileName();
-        shareExcelFile(misaRawWorkbook, filename);
+        shareExcelFile(wb, filename);
     }
 
     // Hàm xem trước bảng dữ liệu hóa đơn trực tiếp trên màn hình điện thoại
@@ -1853,7 +1854,7 @@ try {
                 <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right; font-weight:bold; color:#4ade80;">${r[11] || 0}</td>
                 <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right;">${(r[12] || 0).toLocaleString()}</td>
                 <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right;">${(r[13] || 0).toLocaleString()}</td>
-                <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right; color:#94a3b8;">${r[14] || 0}%</td>
+                <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right; color:#94a3b8;">${r[14] || '0%'}</td>
                 <td style="padding:6px 8px; border-bottom:1px solid #1e293b; text-align:right; font-weight:bold; color:#38bdf8;">${(r[16] || 0).toLocaleString()} đ</td>
             `;
             tbody.appendChild(tr);
@@ -1862,7 +1863,56 @@ try {
         p.scrollIntoView({ behavior: 'smooth' });
     }
 
-    const CURRENT_VERSION = "2.12";
+    // Hàm làm mới toàn bộ hệ thống để chọn file mới
+    function resetApp() {
+        if (!confirm("Bạn có muốn làm mới toàn bộ để chọn file mới?")) return;
+        kiotDataRows = [];
+        rawKiotRows = [];
+        kiotHeaderIdx = 0;
+        selectedKiotColIdx = -1;
+        misaDataRows = [];
+        misaRawWorkbook = null;
+        misaActiveSheetName = null;
+        misaStockColName = null;
+        generatedHoadonWb = null;
+        generatedMisaWb = null;
+        lastGeneratedRows = [];
+        lastInvoiceStats = null;
+
+        const fiKiot = document.getElementById("fileKiotInput");
+        if (fiKiot) fiKiot.value = "";
+        const fnKiot = document.getElementById("kiotFileName");
+        if (fnKiot) { fnKiot.innerText = "Chưa chọn file Kiot..."; fnKiot.classList.remove("loaded"); }
+        const selBox = document.getElementById("kiotColSelectorBox");
+        if (selBox) selBox.style.display = "none";
+        const selEl = document.getElementById("selectKiotCol");
+        if (selEl) selEl.innerHTML = "";
+
+        const fiMisa = document.getElementById("fileMisaInput");
+        if (fiMisa) fiMisa.value = "";
+        const fnMisa = document.getElementById("misaFileName");
+        if (fnMisa) { fnMisa.innerText = "Chưa chọn file Misa..."; fnMisa.classList.remove("loaded"); }
+
+        document.getElementById("kpiKiotCount").innerText = "0 HĐ";
+        document.getElementById("kpiKiotTotal").innerText = "0 đ";
+        document.getElementById("kpiMisaStock").innerText = "0 mặt hàng";
+        document.getElementById("kpiOutputTotal").innerText = "0 đ";
+
+        const pCont = document.getElementById("progressContainer");
+        if (pCont) pCont.style.display = "none";
+        const pFill = document.getElementById("progressBarFill");
+        if (pFill) pFill.style.width = "0%";
+
+        const dlBox = document.getElementById("downloadBox");
+        if (dlBox) dlBox.style.display = "none";
+        const prevBox = document.getElementById("previewContainer");
+        if (prevBox) prevBox.style.display = "none";
+
+        clearLog();
+        log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
+    }
+
+    const CURRENT_VERSION = "2.13";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
