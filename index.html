@@ -1504,102 +1504,113 @@ try {
         document.getElementById("progressContainer").style.display = "block";
         document.getElementById("downloadBox").style.display = "none";
 
-        // Bản sao MISA
-        const misaCopy = misaDataRows.map(x => ({ ...x, origStock: x.stock, daXuat: 0 }));
+        try {
+            // Bản sao MISA
+            const misaCopy = misaDataRows.map(x => ({ ...x, origStock: x.stock, daXuat: 0 }));
 
-        const rowsHoadon = [
-            ['STT HĐ', 'Ngày', 'Tên đơn vị mua hàng', 'Địa chỉ', 'Mã số thuế', 'Người mua hàng', 'Email', 'Hình thức', 'Mã hàng', 'Tên hàng', 'Đơn vị tính', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Thuế suất', 'Tiền thuế GTGT', 'Tiền thuế sau VAT']
-        ];
+            const rowsHoadon = [
+                ['STT HĐ', 'Ngày', 'Tên đơn vị mua hàng', 'Địa chỉ', 'Mã số thuế', 'Người mua hàng', 'Email', 'Hình thức', 'Mã hàng', 'Tên hàng', 'Đơn vị tính', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Thuế suất', 'Tiền thuế GTGT', 'Tiền thuế sau VAT']
+            ];
 
-        let sttHd = 1;
-        let tongDoanhThu = 0;
-        const totalInvoices = danhSachTienHd.length;
+            let sttHd = 1;
+            let tongDoanhThu = 0;
+            const totalInvoices = danhSachTienHd.length;
 
-        for (let i = 0; i < totalInvoices; i++) {
-            const tienHd = danhSachTienHd[i];
-            const isGomMode = customN !== null;
-            const dsHang = randomHangHoa(misaCopy, tienHd, maxDong, isGomMode);
+            for (let i = 0; i < totalInvoices; i++) {
+                const tienHd = danhSachTienHd[i];
+                const isGomMode = customN !== null;
+                const dsHang = randomHangHoa(misaCopy, tienHd, maxDong, isGomMode);
 
-            if (!dsHang || dsHang.length === 0) {
-                log(`[!] Cảnh báo: Không đủ tồn kho cho HĐ #${i+1} (${tienHd.toLocaleString()} đ)`);
-                continue;
+                if (!dsHang || dsHang.length === 0) {
+                    log(`[!] Cảnh báo: Không đủ tồn kho cho HĐ #${i+1} (${tienHd.toLocaleString()} đ)`);
+                    continue;
+                }
+
+                const actualHdTotal = dsHang.reduce((a, b) => a + b.tong, 0);
+                tongDoanhThu += actualHdTotal;
+
+                for (let h of dsHang) {
+                    rowsHoadon.push([
+                        sttHd,
+                        ngayHdStr,
+                        '',
+                        '',
+                        '',
+                        'Người tiêu dùng',
+                        '',
+                        hinhThuc,
+                        h.ma,
+                        h.ten,
+                        h.dvt,
+                        h.sl,
+                        h.dg,
+                        h.tt,
+                        (h.rate > 0 ? h.rate + '%' : '0%'),
+                        h.vat,
+                        h.tong
+                    ]);
+                }
+
+                log(`[+] HĐ ${sttHd} | Người tiêu dùng | ${actualHdTotal.toLocaleString()} đ (${dsHang.length} món)`);
+                sttHd++;
+
+                // Update UI progress
+                const pct = Math.round(((i + 1) / totalInvoices) * 100);
+                document.getElementById("progressBarFill").style.width = pct + "%";
+                document.getElementById("progressPct").innerText = pct + "%";
+                document.getElementById("progressStatus").innerText = `Đang xử lý: ${i + 1} / ${totalInvoices} HĐ`;
+                document.getElementById("kpiOutputTotal").innerText = tongDoanhThu.toLocaleString() + " đ";
+
+                // Nhường CPU cho UI render
+                if (i % 5 === 0) await new Promise(r => setTimeout(r, 10));
             }
 
-            const actualHdTotal = dsHang.reduce((a, b) => a + b.tong, 0);
-            tongDoanhThu += actualHdTotal;
-
-            for (let h of dsHang) {
-                rowsHoadon.push([
-                    sttHd,
-                    ngayHdStr,
-                    '',
-                    '',
-                    '',
-                    'Người tiêu dùng',
-                    '',
-                    hinhThuc,
-                    h.ma,
-                    h.ten,
-                    h.dvt,
-                    h.sl,
-                    h.dg,
-                    h.tt,
-                    (h.rate > 0 ? h.rate + '%' : '0%'),
-                    h.vat,
-                    h.tong
-                ]);
+            // Sheet TONKHO
+            const rowsTonKho = [
+                ['Mã', 'Tên', 'Tồn Cũ', 'Đã Xuất', 'Tồn Mới']
+            ];
+            for (let item of misaCopy) {
+                const tonCu = item.origStock;
+                const daXuat = item.daXuat || 0;
+                const tonMoi = tonCu - daXuat;
+                rowsTonKho.push([item.ma, item.ten, tonCu, daXuat, tonMoi]);
             }
 
-            log(`[+] HĐ ${sttHd} | Người tiêu dùng | ${actualHdTotal.toLocaleString()} đ (${dsHang.length} món)`);
-            sttHd++;
+            // Lưu lại dữ liệu hóa đơn để phục vụ xem trước
+            lastGeneratedRows = rowsHoadon;
+            lastInvoiceStats = {
+                count: sttHd - 1,
+                total: tongDoanhThu,
+                date: ngayHdStr,
+                customer: "Người tiêu dùng"
+            };
 
-            // Update UI progress
-            const pct = Math.round(((i + 1) / totalInvoices) * 100);
-            document.getElementById("progressBarFill").style.width = pct + "%";
-            document.getElementById("progressPct").innerText = pct + "%";
-            document.getElementById("progressStatus").innerText = `Đang xử lý: ${i + 1} / ${totalInvoices} HĐ`;
-            document.getElementById("kpiOutputTotal").innerText = tongDoanhThu.toLocaleString() + " đ";
+            // Tạo Workbook Hóa đơn
+            generatedHoadonWb = XLSX.utils.book_new();
+            const wsHoadon = XLSX.utils.aoa_to_sheet(rowsHoadon);
+            const wsTonKho = XLSX.utils.aoa_to_sheet(rowsTonKho);
+            XLSX.utils.book_append_sheet(generatedHoadonWb, wsHoadon, "HOADON");
+            XLSX.utils.book_append_sheet(generatedHoadonWb, wsTonKho, "TONKHO");
 
-            // Nhường CPU cho UI render
-            if (i % 5 === 0) await new Promise(r => setTimeout(r, 10));
+            // Tạo Workbook MISA đã trừ tồn kho
+            if (misaRawWorkbook) {
+                generatedMisaWb = misaRawWorkbook;
+            }
+
+            btnRun.disabled = false;
+            const dlBox = document.getElementById("downloadBox");
+            if (dlBox) {
+                dlBox.style.display = "block";
+                dlBox.scrollIntoView({ behavior: 'smooth' });
+            }
+            log(`[✔] HOÀN TẤT: Tạo thành công ${sttHd - 1} HĐ | Tổng doanh thu: ${tongDoanhThu.toLocaleString()} đ`);
+            alert(`🎉 Đã tạo thành công ${sttHd - 1} hóa đơn!\nTổng doanh thu: ${tongDoanhThu.toLocaleString()} đ\n(Kéo xuống dưới để Tải về hoặc Xem trước)`);
+        } catch (err) {
+            btnRun.disabled = false;
+            log(`[!] Lỗi trong quá trình tạo: ${err.message}`);
+            alert(`Đã xảy ra lỗi: ${err.message}`);
+            console.error(err);
         }
-
-        // Sheet TONKHO
-        const rowsTonKho = [
-            ['Mã', 'Tên', 'Tồn Cũ', 'Đã Xuất', 'Tồn Mới']
-        ];
-        for (let item of misaCopy) {
-            const tonCu = item.origStock;
-            const daXuat = item.daXuat || 0;
-            const tonMoi = tonCu - daXuat;
-            rowsTonKho.push([item.ma, item.ten, tonCu, daXuat, tonMoi]);
-        }
-
-        // Lưu lại dữ liệu hóa đơn để phục vụ xem trước
-        lastGeneratedRows = rowsHoadon;
-        lastInvoiceStats = {
-            count: sttHd - 1,
-            total: tongDoanhThu,
-            date: ngayHdStr,
-            customer: defaultCustomer
-        };
-
-        // Tạo Workbook Hóa đơn
-        generatedHoadonWb = XLSX.utils.book_new();
-        const wsHoadon = XLSX.utils.aoa_to_sheet(rowsHoadon);
-        const wsTonKho = XLSX.utils.aoa_to_sheet(rowsTonKho);
-        XLSX.utils.book_append_sheet(generatedHoadonWb, wsHoadon, "HOADON");
-        XLSX.utils.book_append_sheet(generatedHoadonWb, wsTonKho, "TONKHO");
-
-        // Tạo Workbook MISA đã trừ tồn kho
-        if (misaRawWorkbook) {
-            generatedMisaWb = misaRawWorkbook;
-        }
-
-        btnRun.disabled = false;
-        document.getElementById("downloadBox").style.display = "block";
-        log(`[✔] HOÀN TẤT: Tạo thành công ${sttHd - 1} HĐ | Tổng doanh thu: ${tongDoanhThu.toLocaleString()} đ`);
-        alert("Đã tạo hóa đơn thành công! Bạn có thể Tải về hoặc Xem trước ngay bên dưới.");
     }
 
     let lastGeneratedRows = [];
@@ -1657,15 +1668,13 @@ try {
             a.title = filename;
             document.body.appendChild(a);
 
-            // Tự động sao chép tên file và hiện bảng hướng dẫn Save As
-            showSaveAsGuide(filename);
-
             a.click();
             setTimeout(() => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(blobUrl);
             }, 6000);
-            log(`[✔] Đang tải file Excel: ${filename}`);
+            log(`[✔] Đang tải file Excel về máy: ${filename}`);
+            alert(`📥 Đang tải file Excel: ${filename}\nFile sẽ được lưu vào thư mục Tải về (Download) của máy.`);
         } catch (e) {
             log(`[!] Lỗi khi tải file: ${e.message}`);
             XLSX.writeFile(workbook, filename);
