@@ -1,6 +1,6 @@
 {
-  "version": "2.12",
+  "version": "2.13",
   "release_date": "15/10/2026",
-  "changelog": "- Cho phép gom 1 HĐ bốc nhiều mặt hàng phong phú (15-30+ dòng)\n- Khống chế số lượng bán lẻ tự nhiên (1-10 cái), không nhân vọt số lượng\n- Khớp thuế tuyệt đối 100% (0 đ chênh lệch)\n- Tối ưu động cơ cân bằng số lượng và đơn giá\n- Đồng bộ phiên bản Mobile và PC qua GitHub",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.12/PM_HoaDon.zip"
+  "changelog": "- Tích hợp KeyGen Admin 'Tập trung 1 mối' vào Mobile (cử chỉ bí mật + mã PIN 6868)\n- Sửa triệt để lỗi đứng đơ màn hình ở hóa đơn cuối cùng (100%)\n- Nâng cấp trừ tồn kho MISA trực tiếp vào file Excel trên Mobile\n- Bổ sung nút [Làm mới] dữ liệu tiện lợi\n- Sửa lỗi hiển thị thuế suất %% kép\n- Dọn sạch rác, tối ưu hiệu năng và dung lượng",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.13/PM_HoaDon.zip"
 }
