@@ -1131,13 +1131,15 @@ try {
                     selectEl.appendChild(opt);
                 }
 
-                // Hiển thị khung chọn cột
-                document.getElementById("kiotColSelectorBox").style.display = "block";
-
-                // Áp dụng tính toán
+                // Áp dụng tính toán tự động (ẩn khung chọn cột để giao diện gọn gàng)
                 if (bestValColIdx !== -1) {
                     applyKiotColumn(bestValColIdx);
+                    const colBox = document.getElementById("kiotColSelectorBox");
+                    if (colBox) colBox.style.display = "none";
                 } else {
+                    // Chỉ hiển thị khung chọn cột khi hệ thống không thể tự động nhận diện
+                    const colBox = document.getElementById("kiotColSelectorBox");
+                    if (colBox) colBox.style.display = "block";
                     alert("Chưa tự động xác định được cột tiền. Vui lòng chọn cột tiền trong danh sách hiển thị bên dưới ô chọn file Kiot!");
                 }
 
