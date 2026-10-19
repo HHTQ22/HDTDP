@@ -1,6 +1,6 @@
 {
   "version": "2.14",
   "release_date": "19/10/2026",
-  "changelog": "- Nâng cấp thuật toán bốc hàng thông minh: Ưu tiên bốc tồn kho dồi dào (>20 cái), bảo vệ hàng tồn ít (<=5 cái)\n- Tích hợp Bảng Thông Báo Chào Mừng & Lưu ý công việc chuẩn PC lên Mobile\n- Nâng cấp nút gửi Zalo: Chia sẻ trực tiếp FILE EXCEL (.xlsx) thay vì sao chép văn bản\n- Tự động hóa ngầm nhận diện cột tính tiền trên Mobile (ẩn pop-up thừa)\n- Quy hoạch phân vùng thư mục độc lập (PC, Mobile, Cập nhật GitHub) + 3 phím tắt 1-click",
+  "changelog": "- Nâng cấp thuật toán bốc hàng: Ưu tiên bốc mặt hàng tồn kho nhiều (>20 cái) trước, bảo vệ kho\n- Mobile: Nâng cấp gửi trực tiếp FILE EXCEL (.xlsx) vào Zalo qua Web Share API\n- Mobile: Tự động hóa ngầm cột tiền KiotViet, ẩn dialog thừa giúp giao diện gọn gàng\n- Mobile: Đồng bộ Bảng thông báo chào mừng & hướng dẫn trách nhiệm như bản PC\n- Quy hoạch cấu trúc thư mục PC / Mobile / GitHub rõ ràng, thao tác 1-Click",
   "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.14/PM_HoaDon.zip"
 }
