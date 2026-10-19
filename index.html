@@ -447,12 +447,13 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.13)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.14)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
+            <div id="welcomeNoticeBtn" style="cursor:pointer; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.4); color:#38bdf8; font-size:11px; font-weight:700; padding:4px 8px; border-radius:12px; display:flex; align-items:center; gap:4px;" onclick="openWelcomeModal()" title="Mở Bảng Thông Báo">📢 <span>Thông báo</span></div>
             <div id="adminQuickBadge" style="display:none; cursor:pointer; background:linear-gradient(135deg, rgba(234,179,8,0.25), rgba(245,158,11,0.25)); border:1px solid #f59e0b; color:#fde047; font-size:11px; font-weight:800; padding:4px 8px; border-radius:12px; box-shadow:0 0 10px rgba(245,158,11,0.3);" onclick="openAdminKeygenDirect()">🔑 Admin</div>
-            <div id="licensePill" class="license-pill">⏳ Bản quyền: Đang kiểm tra...</div>
+            <div id="licensePill" class="license-pill" style="cursor:pointer;" onclick="openWelcomeModal()" title="Xem thông tin bản quyền">⏳ Bản quyền: Đang kiểm tra...</div>
         </div>
     </div>
 
@@ -701,6 +702,94 @@
     </div>
 </div>
 
+<!-- Modal Bảng Thông Báo Chào Mừng (Đồng bộ y hệt bản PC) -->
+<div id="welcomeModal" class="modal-overlay" style="display:none; z-index:99998; justify-content:center; align-items:center; padding:12px; backdrop-filter:blur(5px); background:rgba(0,0,0,0.85);">
+    <div class="modal-card" style="max-width:480px; width:100%; max-height:92vh; overflow-y:auto; border:1.5px solid #38bdf8; padding:20px 16px; text-align:left; box-shadow:0 25px 60px rgba(0,0,0,0.95); animation:fadeIn 0.25s ease; position:relative;">
+        
+        <!-- Nút đóng góc phải -->
+        <button type="button" onclick="closeWelcomeModal()" style="position:absolute; top:12px; right:12px; background:rgba(255,255,255,0.08); border:none; color:#94a3b8; font-size:16px; font-weight:700; width:28px; height:28px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+
+        <!-- 1. Header & Title -->
+        <div style="text-align:center; margin-bottom:14px; padding-right:15px; padding-left:15px;">
+            <div style="font-size:18px; font-weight:800; color:#38bdf8; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <span>⚡</span> PM TẠO HÓA ĐƠN
+            </div>
+            <div style="font-size:11.5px; color:#94a3b8; margin-top:2px;">Hệ thống xử lý hóa đơn và phân bổ tồn kho thuế</div>
+        </div>
+
+        <!-- 2. Lời chào & Ngày hiện tại -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(15,23,42,0.7); border:1px solid rgba(255,255,255,0.06); padding:8px 12px; border-radius:10px; margin-bottom:12px; font-size:12px;">
+            <span style="color:#ffffff; font-weight:600;">Xin chào! Chúc bạn làm việc hiệu quả.</span>
+            <span style="color:#38bdf8; font-weight:700;" id="welcomeModalToday">📅 Ngày: --/--/----</span>
+        </div>
+
+        <!-- 3. Khung Thông Báo Công Việc -->
+        <div style="background:rgba(15,23,42,0.85); border:1px solid rgba(56,189,248,0.25); border-radius:14px; padding:12px 14px; margin-bottom:12px;">
+            <div style="font-size:12.5px; font-weight:800; color:#38bdf8; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <span>📢</span> THÔNG BÁO CÔNG VIỆC
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:12px; color:#e2e8f0; line-height:1.45;">
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                    <span style="color:#38bdf8; font-size:11px; margin-top:1px;">🔹</span>
+                    <span>Kiểm tra file hóa đơn KiotViet trước khi xử lý.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                    <span style="color:#38bdf8; font-size:11px; margin-top:1px;">🔹</span>
+                    <span>Kiểm tra file tồn kho MISA.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                    <span style="color:#38bdf8; font-size:11px; margin-top:1px;">🔹</span>
+                    <span>Kiểm tra ngày hóa đơn và phương thức thanh toán.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:8px;">
+                    <span style="color:#38bdf8; font-size:11px; margin-top:1px;">🔹</span>
+                    <span>Kiểm tra nhật ký sau khi tạo hóa đơn để phát hiện lỗi.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thời hạn sử dụng (Đặt ra giữa) -->
+        <div id="welcomeExpBox" style="text-align:center; margin-bottom:12px; padding:8px 12px; background:rgba(45,212,191,0.12); border:1px solid rgba(45,212,191,0.35); border-radius:10px;">
+            <span style="font-size:13px; font-weight:800; color:#2dd4bf;" id="welcomeModalExpText">⏳ Thời Hạn Sử Dụng: Đang kiểm tra...</span>
+        </div>
+
+        <!-- 4. Khung Lưu ý quan trọng khi sử dụng (Viền vàng cam chuẩn PC) -->
+        <div style="background:#0f172a; border:1px solid #f59e0b; border-radius:14px; padding:12px 14px; margin-bottom:16px;">
+            <div style="font-size:12px; font-weight:800; color:#f59e0b; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+                <span>⚠️</span> LƯU Ý QUAN TRỌNG KHI SỬ DỤNG
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px; font-size:11px; color:#cbd5e1; line-height:1.45;">
+                <div style="display:flex; align-items:flex-start; gap:6px;">
+                    <span style="color:#f59e0b; font-weight:bold;">•</span>
+                    <span>Phần mềm được phát triển nhằm hỗ trợ xử lý dữ liệu.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:6px;">
+                    <span style="color:#f59e0b; font-weight:bold;">•</span>
+                    <span>Người sử dụng cần tự kiểm tra file đầu vào, đối chiếu kết quả hóa đơn, tồn kho và thông tin thuế trước khi sử dụng.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:6px;">
+                    <span style="color:#f59e0b; font-weight:bold;">•</span>
+                    <span>Người phát triển không trực tiếp thực hiện nghiệp vụ kế toán, kê khai thuế hoặc quyết định phát hành hóa đơn thay người sử dụng.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:6px;">
+                    <span style="color:#f59e0b; font-weight:bold;">•</span>
+                    <span>Phần mềm có thể phát sinh lỗi kỹ thuật hoặc kết quả không chính xác. Hãy sao lưu dữ liệu và kiểm tra kết quả trước khi áp dụng vào thực tế.</span>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:6px;">
+                    <span style="color:#f59e0b; font-weight:bold;">•</span>
+                    <span>Giới hạn trách nhiệm được áp dụng trong phạm vi pháp luật cho phép.</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Button Bắt đầu làm việc (Style Accent Button PC) -->
+        <button type="button" class="btn-activate" style="background:linear-gradient(135deg, #0284c7, #0ea5e9); color:#ffffff; font-size:14px; font-weight:800; box-shadow:0 4px 14px rgba(14,165,233,0.4);" onclick="closeWelcomeModal()">
+            🚀 BẮT ĐẦU LÀM VIỆC
+        </button>
+
+    </div>
+</div>
+
 <!-- Modal Kích hoạt bản quyền -->
 <div id="licenseModal" class="modal-overlay" style="display:none;">
     <div class="modal-card">
@@ -840,12 +929,15 @@ try {
         localStorage.setItem("pm_device_id", deviceId);
     }
 
-    function checkLicense() {
+    function checkLicense(autoShowWelcome = false) {
         const savedKey = (localStorage.getItem("pm_license_key") || "").trim();
         const validInfo = verifyLicense(deviceId, savedKey);
         if (validInfo.valid) {
             document.getElementById("licensePill").innerText = "⏳ Hạn: " + validInfo.expStr;
             document.getElementById("licenseModal").style.display = "none";
+            if (autoShowWelcome) {
+                openWelcomeModal();
+            }
             return true;
         } else {
             document.getElementById("licensePill").innerText = "🔒 Chưa kích hoạt";
@@ -853,6 +945,37 @@ try {
             document.getElementById("licenseModal").style.display = "flex";
             return false;
         }
+    }
+
+    // Bảng Thông Báo Chào Mừng (Đồng bộ y hệt bản PC)
+    function openWelcomeModal() {
+        const modal = document.getElementById("welcomeModal");
+        if (!modal) return;
+        
+        // 1. Cập nhật ngày hôm nay
+        const now = new Date();
+        const dStr = String(now.getDate()).padStart(2, '0') + "/" + String(now.getMonth() + 1).padStart(2, '0') + "/" + now.getFullYear();
+        const todayEl = document.getElementById("welcomeModalToday");
+        if (todayEl) todayEl.innerText = "📅 Ngày: " + dStr;
+
+        // 2. Cập nhật thời hạn bản quyền
+        const savedKey = (localStorage.getItem("pm_license_key") || "").trim();
+        const res = verifyLicense(deviceId, savedKey);
+        const expEl = document.getElementById("welcomeModalExpText");
+        if (expEl) {
+            if (res.valid) {
+                expEl.innerText = "⏳ Thời Hạn Sử Dụng: " + res.expStr;
+            } else {
+                expEl.innerText = "⏳ Bản Quyền: Chưa kích hoạt";
+            }
+        }
+
+        modal.style.display = "flex";
+    }
+
+    function closeWelcomeModal() {
+        const modal = document.getElementById("welcomeModal");
+        if (modal) modal.style.display = "none";
     }
 
     function verifyLicense(mid, key) {
@@ -891,7 +1014,7 @@ try {
         if (res.valid) {
             localStorage.setItem("pm_license_key", key);
             alert("Kích hoạt thành công! Hạn dùng: " + res.expStr);
-            checkLicense();
+            checkLicense(true);
         } else {
             alert("Mã kích hoạt không hợp lệ hoặc đã hết hạn!");
         }
@@ -1287,10 +1410,16 @@ try {
                 const dg = Math.round(thanhTien / sl);
                 if (dg >= minP && dg <= maxP) valid.push({ sl, dg });
             }
-        }
         if (valid.length > 0) {
-            const favored = valid.filter(v => v.sl >= 2 && v.sl <= 6);
-            if (favored.length > 0) return favored[Math.floor(Math.random() * favored.length)];
+            let favored;
+            if (stockQty > 20) {
+                favored = valid.filter(v => v.sl >= 2 && v.sl <= 8);
+            } else if (stockQty <= 5) {
+                favored = valid.filter(v => v.sl <= 2);
+            } else {
+                favored = valid.filter(v => v.sl >= 2 && v.sl <= 5);
+            }
+            if (favored && favored.length > 0) return favored[Math.floor(Math.random() * favored.length)];
             return valid[Math.floor(Math.random() * valid.length)];
         }
         if (thanhTien / Math.min(stockQty, 15) > maxP) {
@@ -1377,9 +1506,15 @@ try {
         }
         soDong = Math.min(soDong, avail.length);
 
-        // Bốc ngẫu nhiên không trùng lặp
-        const shuffled = avail.slice().sort(() => 0.5 - Math.random());
-        const chosen = shuffled.slice(0, soDong);
+        // Bốc ưu tiên theo trọng số tồn kho (Algorithm A-Res): Hàng tồn càng nhiều xác suất được chọn càng cao
+        const weightedItems = avail.map(item => {
+            const u = Math.max(1e-9, Math.random());
+            const weight = Math.pow(Math.max(1, item.stock), 1.25);
+            const key = Math.pow(u, 1.0 / weight);
+            return { item, key };
+        });
+        weightedItems.sort((a, b) => b.key - a.key);
+        const chosen = weightedItems.slice(0, soDong).map(x => x.item);
         const parts = chiaTien(tongTien, soDong);
 
         const dsHang = [];
@@ -1922,7 +2057,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.13";
+    const CURRENT_VERSION = "2.14";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
@@ -2248,8 +2383,8 @@ try {
         setupAdminTrigger();
     }
 
-    // Khởi chạy kiểm tra bản quyền & hiển thị tên file mặc định
-    checkLicense();
+    // Khởi chạy kiểm tra bản quyền & hiển thị bảng thông báo chào mừng chuẩn PC
+    checkLicense(true);
     updateFileNameBadges();
     initAdminFeatures();
 </script>

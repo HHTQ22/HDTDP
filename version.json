@@ -1,6 +1,6 @@
 {
-  "version": "2.13",
-  "release_date": "15/10/2026",
-  "changelog": "- Tích hợp KeyGen Admin 'Tập trung 1 mối' vào Mobile\n- Sửa triệt để lỗi đứng đơ màn hình ở hóa đơn cuối cùng (100%)\n- Nâng cấp trừ tồn kho MISA trực tiếp vào file Excel trên Mobile\n- Bổ sung nút [Làm mới] dữ liệu tiện lợi\n- Sửa lỗi hiển thị thuế suất %% kép\n- Dọn sạch rác, tối ưu hiệu năng và dung lượng",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.13/PM_HoaDon.zip"
+  "version": "2.14",
+  "release_date": "19/10/2026",
+  "changelog": "- Nâng cấp thuật toán bốc hàng thông minh: Ưu tiên bốc tồn kho dồi dào (>20 cái), bảo vệ hàng tồn ít (<=5 cái)\n- Tích hợp Bảng Thông Báo Chào Mừng & Lưu ý công việc chuẩn PC lên Mobile\n- Nâng cấp nút gửi Zalo: Chia sẻ trực tiếp FILE EXCEL (.xlsx) thay vì sao chép văn bản\n- Tự động hóa ngầm nhận diện cột tính tiền trên Mobile (ẩn pop-up thừa)\n- Quy hoạch phân vùng thư mục độc lập (PC, Mobile, Cập nhật GitHub) + 3 phím tắt 1-click",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.14/PM_HoaDon.zip"
 }
