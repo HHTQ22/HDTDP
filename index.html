@@ -631,23 +631,31 @@
     </div>
 
 
-    <!-- Modal Gửi Zalo / Mở (Khắc phục triệt để không bị hiện Save As) -->
-    <div id="zaloShareModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.78); z-index:99999; justify-content:center; align-items:center; padding:16px;">
-        <div style="background:#1e293b; border:2px solid #0068ff; border-radius:20px; padding:20px 16px; max-width:440px; width:100%; box-shadow:0 25px 50px rgba(0,0,0,0.85); text-align:center; animation:fadeIn 0.25s ease;">
-            <div style="font-size:36px; margin-bottom:8px;">💬</div>
-            <div style="font-size:16px; font-weight:800; color:#38bdf8; margin-bottom:6px;">GỬI THÔNG TIN SANG ZALO</div>
-            <div style="font-size:12px; color:#a7f3d0; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:6px 10px; margin-bottom:12px; font-weight:600;">
-                ✔ Đã tự động sao chép tóm tắt hóa đơn vào bộ nhớ tạm!
+    <!-- Modal Hướng Dẫn Gửi File Excel Sang Zalo -->
+    <div id="zaloShareModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.82); z-index:99999; justify-content:center; align-items:center; padding:16px;">
+        <div style="background:#1e293b; border:2px solid #0068ff; border-radius:20px; padding:22px 18px; max-width:440px; width:100%; box-shadow:0 25px 50px rgba(0,0,0,0.85); text-align:center; animation:fadeIn 0.25s ease;">
+            <div style="font-size:38px; margin-bottom:8px;">📊</div>
+            <div style="font-size:16px; font-weight:800; color:#38bdf8; margin-bottom:6px;">GỬI FILE EXCEL SANG ZALO</div>
+            <div id="zaloFileAlertBadge" style="font-size:12px; color:#a7f3d0; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:8px 10px; margin-bottom:12px; font-weight:600;">
+                ✔ Đã tải file Excel về thư mục Tải về (Download) của máy!
             </div>
-            <div id="zaloSummaryText" style="background:#0f172a; border:1px solid rgba(255,255,255,0.08); padding:10px; border-radius:12px; font-size:11px; color:#cbd5e1; text-align:left; margin-bottom:14px; max-height:130px; overflow-y:auto; line-height:1.6; white-space:pre-wrap; font-family:monospace;">
+            
+            <div style="background:#0f172a; border:1px solid rgba(255,255,255,0.08); padding:12px; border-radius:12px; text-align:left; margin-bottom:14px; font-size:12px; color:#cbd5e1; line-height:1.6;">
+                <div style="color:#38bdf8; font-weight:700; margin-bottom:6px;">📁 Tên file: <span id="zaloModalFileName" style="color:#f8fafc; font-family:monospace; background:rgba(56,189,248,0.15); padding:2px 6px; border-radius:4px;">HOADON.xlsx</span></div>
+                <div style="font-weight:600; color:#e2e8f0; margin-bottom:4px;">📌 Cách gửi file qua Zalo cực dễ:</div>
+                <div style="color:#94a3b8; font-size:11px;">
+                    1. Bấm nút màu xanh <b>[📲 Mở Ứng Dụng Zalo]</b> bên dưới.<br>
+                    2. Vào cuộc trò chuyện với bạn bè hoặc <b>Cloud của tôi</b>.<br>
+                    3. Bấm biểu tượng <b>Kẹp ghim (📎)</b> hoặc <b>Tài liệu</b> &gt; Chọn file Excel vừa tải để gửi!
+                </div>
             </div>
+
             <div style="display:flex; flex-direction:column; gap:8px;">
                 <button type="button" onclick="launchZaloApp()" style="background:#0068ff; color:#fff; border:none; padding:12px; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
-                    <span>📲 Mở Ứng Dụng Zalo</span>
-                    <span style="font-size:11px; font-weight:normal; opacity:0.85;">(Chỉ việc chọn bạn & Dán)</span>
+                    <span>📲 Mở Ứng Dụng Zalo Để Gửi File</span>
                 </button>
-                <button type="button" onclick="shareViaAndroidSystem()" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;">
-                    📤 Menu Chia Sẻ Điện Thoại
+                <button type="button" onclick="reDownloadCurrentFile()" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:12px; font-weight:700; font-size:13px; cursor:pointer;">
+                    📥 Tải Lại File Excel Này
                 </button>
                 <button type="button" onclick="closeZaloModal()" style="background:#334155; color:#cbd5e1; border:none; padding:9px; border-radius:10px; font-size:12px; cursor:pointer;">
                     ✕ Đóng
@@ -1682,54 +1690,63 @@ try {
         }
     }
 
-    function buildInvoiceSummaryText(filename) {
-        const dateStr = (document.getElementById("inputNgayHd") ? document.getElementById("inputNgayHd").value : "").trim() || todayStr;
-        const count = (lastInvoiceStats && lastInvoiceStats.count) ? lastInvoiceStats.count : (lastGeneratedRows ? Math.max(0, lastGeneratedRows.length - 1) : 0);
-        const total = (lastInvoiceStats && lastInvoiceStats.total) ? lastInvoiceStats.total.toLocaleString() : "0";
-        const customer = (lastInvoiceStats && lastInvoiceStats.customer) ? lastInvoiceStats.customer : "Khách lẻ";
+    let currentShareWorkbook = null;
+    let currentShareFilename = "";
 
-        return `🧾 TỔNG HỢP HÓA ĐƠN ĐIỆN TỬ\n📅 Ngày: ${dateStr}\n👤 Khách hàng: ${customer}\n📊 Số lượng: ${count} hóa đơn\n💰 Tổng tiền: ${total} đ\n📁 File đính kèm: ${filename}\n-----------------------------\n(Tạo tự động từ PM_HoaDon Mobile)`;
-    }
-
-    // Hàm chia sẻ trực tiếp qua Zalo / Google Drive / Ứng dụng Excel trên điện thoại
+    // Hàm chia sẻ trực tiếp FILE EXCEL qua Zalo / Menu chia sẻ hệ thống điện thoại
     async function shareExcelFile(workbook, filename) {
         if (!workbook) return;
+        currentShareWorkbook = workbook;
+        currentShareFilename = filename;
+
         try {
+            // 1. Tạo buffer nhị phân và đối tượng File chuẩn Excel
             const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
             const mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            const file = new File([wbout], filename, { type: mimeType });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            const blob = new Blob([wbout], { type: mimeType });
+            const file = new File([blob], filename, { type: mimeType });
+
+            // 2. Kích hoạt Menu chia sẻ FILE của Android (Web Share API)
+            let canShareFile = false;
+            if (navigator.canShare) {
+                try {
+                    canShareFile = navigator.canShare({ files: [file] });
+                } catch(e) {
+                    canShareFile = false;
+                }
+            }
+
+            if (canShareFile && navigator.share) {
                 await navigator.share({
                     files: [file],
                     title: filename,
                     text: `File Excel: ${filename}`
                 });
-                log(`[✔] Đã mở menu chia sẻ file: ${filename}`);
+                log(`[✔] Đã mở menu chia sẻ file Excel: ${filename}`);
                 return;
             }
         } catch (e) {
-            console.log("Share ignored:", e);
+            if (e.name === 'AbortError') {
+                log(`[*] Đã đóng menu chia sẻ.`);
+                return;
+            }
+            console.warn("Navigator share file warning:", e);
         }
-        // KHÔNG BAO GIỜ gọi downloadExcelFile để tránh làm hiện bảng Save As trống!
-        // Mở menu gửi Zalo / Chia sẻ văn bản
+
+        // 3. Fallback (khi chạy trên máy tính hoặc browser không hỗ trợ Web Share File API):
+        // Tự động tải file Excel về máy ngay lập tức
+        downloadExcelFile(workbook, filename);
+
+        // Mở popup hướng dẫn gửi file Excel qua Zalo (tuyệt đối KHÔNG copy văn bản)
         openZaloShareModal(filename);
     }
 
     function openZaloShareModal(filename) {
-        const text = buildInvoiceSummaryText(filename);
-        currentZaloText = text;
-
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text);
-            }
-        } catch(e) {}
-
         const modal = document.getElementById("zaloShareModal");
-        const txtEl = document.getElementById("zaloSummaryText");
-        if (txtEl) txtEl.textContent = text;
+        const fnEl = document.getElementById("zaloModalFileName");
+        if (fnEl) fnEl.textContent = filename;
         if (modal) modal.style.display = "flex";
-        log(`[✔] Đã sao chép tóm tắt hóa đơn để gửi Zalo.`);
+        log(`[✔] Đã chuẩn bị file Excel ${filename} để gửi Zalo.`);
     }
 
     function closeZaloModal() {
@@ -1738,11 +1755,7 @@ try {
     }
 
     function launchZaloApp() {
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText && currentZaloText) {
-                navigator.clipboard.writeText(currentZaloText);
-            }
-        } catch(e) {}
+        // Mở trực tiếp ứng dụng Zalo trên điện thoại
         const zaloIntent = "intent:#Intent;package=com.zing.zalo;action=android.intent.action.MAIN;end";
         window.location.href = zaloIntent;
         setTimeout(() => {
@@ -1750,15 +1763,10 @@ try {
         }, 1200);
     }
 
-    function shareViaAndroidSystem() {
-        if (!currentZaloText) currentZaloText = buildInvoiceSummaryText(getHoaDonFileName());
-        try {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(currentZaloText);
-            }
-        } catch(e) {}
-        const intentUri = "intent:#Intent;action=android.intent.action.SEND;type=text%2Fplain;S.android.intent.extra.TEXT=" + encodeURIComponent(currentZaloText) + ";end";
-        window.location.href = intentUri;
+    function reDownloadCurrentFile() {
+        if (currentShareWorkbook && currentShareFilename) {
+            downloadExcelFile(currentShareWorkbook, currentShareFilename);
+        }
     }
 
     // Lấy chuỗi ngày tháng sạch dạng chữ số để đặt tên file mặc định (VD: 15102026)
