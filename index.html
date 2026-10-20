@@ -1287,6 +1287,7 @@ try {
                 const dg = Math.round(thanhTien / sl);
                 if (dg >= minP && dg <= maxP) valid.push({ sl, dg });
             }
+        }
         if (valid.length > 0) {
             let favored;
             if (stockQty > 20) {
@@ -2222,19 +2223,23 @@ try {
 
     function attachSecretTrigger(elem) {
         if (!elem) return;
-        elem.addEventListener("touchstart", function(e) {
+
+        const startPress = () => {
             adminPressTimer = setTimeout(() => {
                 openAdminAuthFlow();
             }, 1500);
-        }, { passive: true });
-
-        elem.addEventListener("touchend", function() {
+        };
+        const cancelPress = () => {
             if (adminPressTimer) clearTimeout(adminPressTimer);
-        }, { passive: true });
+        };
 
-        elem.addEventListener("touchcancel", function() {
-            if (adminPressTimer) clearTimeout(adminPressTimer);
-        }, { passive: true });
+        elem.addEventListener("touchstart", startPress, { passive: true });
+        elem.addEventListener("touchend", cancelPress, { passive: true });
+        elem.addEventListener("touchcancel", cancelPress, { passive: true });
+
+        elem.addEventListener("mousedown", startPress);
+        elem.addEventListener("mouseup", cancelPress);
+        elem.addEventListener("mouseleave", cancelPress);
 
         elem.addEventListener("click", function() {
             adminClickCount++;
