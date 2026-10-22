@@ -2422,9 +2422,10 @@ try {
     }
 
     function parseNumberJs(val) {
-        if (val === null || val === undefined) return 0;
+        if (val === null || val === undefined || val === '') return 0;
         if (typeof val === 'number') return isNaN(val) ? 0 : val;
-        let s = String(val).trim().replace(/\s+/g, '').replace(/[đ₫VNDvnđ]/gi, '');
+        let s = String(val).trim().replace(/[\s\u00A0đ₫VNDvnđ]/gi, '');
+        if (!s) return 0;
         if (s.includes(',') && s.includes('.')) {
             if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
                 s = s.replace(/\./g, '').replace(',', '.');
@@ -2432,9 +2433,19 @@ try {
                 s = s.replace(/,/g, '');
             }
         } else if (s.includes(',')) {
-            s = s.replace(/,/g, '');
-        } else if (s.includes('.') && s.split('.').pop().length === 3) {
-            s = s.replace(/\./g, '');
+            let parts = s.split(',');
+            if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+                s = s.replace(/,/g, '');
+            } else if (parts.length === 2 && parts[1].length <= 2) {
+                s = s.replace(',', '.');
+            } else {
+                s = s.replace(/,/g, '');
+            }
+        } else if (s.includes('.')) {
+            let parts = s.split('.');
+            if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+                s = s.replace(/\./g, '');
+            }
         }
         let n = parseFloat(s);
         return isNaN(n) ? 0 : n;
@@ -2442,35 +2453,101 @@ try {
 
     function parseDateTimeJs(val) {
         if (!val) return null;
-        if (val instanceof Date && !isNaN(val)) return val;
-        let s = String(val).trim();
-        let d = new Date(s);
-        if (!isNaN(d.getTime()) && s.length >= 8 && !s.toLowerCase().includes('tổng') && !s.toLowerCase().includes('quỹ')) {
-            return d;
-        }
-        let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
-        if (m) {
-            let day = parseInt(m[1], 10);
-            let month = parseInt(m[2], 10) - 1;
-            let year = parseInt(m[3], 10);
-            let hour = m[4] ? parseInt(m[4], 10) : 0;
-            let min = m[5] ? parseInt(m[5], 10) : 0;
-            let sec = m[6] ? parseInt(m[6], 10) : 0;
-            let dt = new Date(year, month, day, hour, min, sec);
+        if (val instanceof Date && !isNaN(val.getTime())) return val;
+        if (Object.prototype.toString.call(val) === '[object Date]' && !isNaN(val.getTime())) return val;
+        
+        // Hỗ trợ số ngày nối tiếp của Excel (Excel Serial Date)
+        if (typeof val === 'number' && val > 20000 && val < 80000) {
+            const dt = new Date(Math.round((val - 25569) * 86400 * 1000));
             if (!isNaN(dt.getTime())) return dt;
         }
+
+        let s = String(val).trim();
+        if (!s || s.length < 4) return null;
+        if (s.toLowerCase().includes('tổng') || s.toLowerCase().includes('quỹ')) return null;
+
+        // Thử ISO: YYYY-MM-DD hoặc YYYY/MM/DD
+        let mIso = s.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})(?:[\sTt]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+        if (mIso) {
+            let y = parseInt(mIso[1], 10);
+            let m = parseInt(mIso[2], 10) - 1;
+            let d = parseInt(mIso[3], 10);
+            let h = mIso[4] ? parseInt(mIso[4], 10) : 0;
+            let mi = mIso[5] ? parseInt(mIso[5], 10) : 0;
+            let sc = mIso[6] ? parseInt(mIso[6], 10) : 0;
+            let dt = new Date(y, m, d, h, mi, sc);
+            if (!isNaN(dt.getTime())) return dt;
+        }
+
+        // Thử chuẩn Việt Nam: DD/MM/YYYY hoặc DD-MM-YYYY
+        let mDmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[\sTt]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+        if (mDmy) {
+            let d = parseInt(mDmy[1], 10);
+            let m = parseInt(mDmy[2], 10) - 1;
+            let y = parseInt(mDmy[3], 10);
+            let h = mDmy[4] ? parseInt(mDmy[4], 10) : 0;
+            let mi = mDmy[5] ? parseInt(mDmy[5], 10) : 0;
+            let sc = mDmy[6] ? parseInt(mDmy[6], 10) : 0;
+            let dt = new Date(y, m, d, h, mi, sc);
+            if (!isNaN(dt.getTime())) return dt;
+        }
+
+        // Thử Date tiêu chuẩn với dấu gạch chéo
+        let standard = new Date(s.replace(/-/g, '/'));
+        if (!isNaN(standard.getTime())) return standard;
+
         return null;
     }
 
     function formatDateTimeJs(dt) {
-        if (!dt) return '';
+        if (!dt || isNaN(dt.getTime())) return '';
         let y = dt.getFullYear();
         let m = String(dt.getMonth() + 1).padStart(2, '0');
         let d = String(dt.getDate()).padStart(2, '0');
         let h = String(dt.getHours()).padStart(2, '0');
         let mi = String(dt.getMinutes()).padStart(2, '0');
         let s = String(dt.getSeconds()).padStart(2, '0');
-        return `${y}-${m}-${d} ${h}:${mi}:${s}`;
+        return ${y}-- ::;
+    }
+
+    function findBestHeaderIdxJs(rawData) {
+        let bestIdx = 0;
+        let bestScore = -1;
+        const limit = Math.min(15, rawData.length);
+        for (let i = 0; i < limit; i++) {
+            const row = rawData[i];
+            if (!row || !Array.isArray(row)) continue;
+            const nonBlank = row.filter(c => c !== null && c !== undefined && String(c).trim() !== '');
+            if (nonBlank.length < 2) continue;
+            
+            let score = 0;
+            let hasCode = false;
+            let hasVal = false;
+            
+            for (let cell of nonBlank) {
+                const s = String(cell).toLowerCase().trim();
+                if (['mã phiếu', 'mã hóa đơn', 'mã hđ', 'mã hd', 'mã chứng từ', 'mã ct', 'mã gd', 'mã giao dịch', 'mã đơn', 'mã', 'số phiếu', 'số hđ', 'số chứng từ', 'chứng từ', 'phiếu thu', 'phiếu chi', 'code', 'id', 'invoice', 'voucher'].some(k => s.includes(k) || s === k)) {
+                    hasCode = true;
+                    score += 3;
+                }
+                if (['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền', 'thực thu', 'đã thu', 'doanh thu', 'thu', 'chi', 'thanh toán', 'amount', 'total', 'price', 'trị giá'].some(k => s.includes(k) || s === k)) {
+                    hasVal = true;
+                    score += 3;
+                }
+                if (['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày ct', 'ngày', 'giờ', 'date', 'time'].some(k => s.includes(k))) {
+                    score += 2;
+                }
+                if (['người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tài khoản', 'ngân hàng', 'phương thức'].some(k => s.includes(k))) {
+                    score += 1;
+                }
+            }
+            if (hasCode && hasVal) score += 10;
+            if (score > bestScore) {
+                bestScore = score;
+                bestIdx = i;
+            }
+        }
+        return bestIdx;
     }
 
     async function handleMergeFilesMobile(input) {
@@ -2481,59 +2558,134 @@ try {
         let fileNames = [];
         let errors = [];
 
-        log(`[*] Bắt đầu đọc và gom ${files.length} file...`);
+        log([*] Bắt đầu đọc và gom  file...);
 
         for (let file of files) {
             try {
                 const data = await file.arrayBuffer();
-                const wb = XLSX.read(data, {type: 'array', cellDates: true});
-                const firstSheetName = wb.SheetNames[0];
-                const ws = wb.Sheets[firstSheetName];
-                const rawData = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+                let u8 = new Uint8Array(data);
+                let wb;
+                try {
+                    wb = XLSX.read(u8, {type: 'array', cellDates: true});
+                } catch (readErr) {
+                    const text = new TextDecoder('utf-8').decode(u8);
+                    wb = XLSX.read(text, {type: 'string'});
+                }
+
+                // Quét tìm sheet có dữ liệu tốt nhất (hỗ trợ file nhiều sheet)
+                let bestSheetData = null;
+                let maxRowsCount = -1;
+                for (let sName of wb.SheetNames) {
+                    const sheet = wb.Sheets[sName];
+                    if (!sheet || !sheet['!ref']) continue;
+                    const r = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ''});
+                    if (r && r.length > maxRowsCount) {
+                        maxRowsCount = r.length;
+                        bestSheetData = r;
+                    }
+                }
+                const rawData = bestSheetData || [];
 
                 if (!rawData || rawData.length === 0) {
-                    errors.push(`${file.name}: File rỗng`);
+                    errors.push(${file.name}: File rỗng);
                     continue;
                 }
 
-                let headerIdx = 0;
-                for (let i = 0; i < Math.min(10, rawData.length); i++) {
-                    const rowStr = rawData[i].map(x => String(x).toLowerCase().trim());
-                    if (rowStr.some(k => k.includes('mã phiếu') || k.includes('mã hóa đơn') || k.includes('mã hđ') || k.includes('thời gian') || k.includes('ngày') || k.includes('giá trị') || k.includes('tổng tiền'))) {
-                        headerIdx = i;
-                        break;
-                    }
-                }
-
-                const headers = rawData[headerIdx].map(x => String(x).toLowerCase().trim());
+                const headerIdx = findBestHeaderIdxJs(rawData);
+                const headers = (rawData[headerIdx] || []).map(x => String(x || '').toLowerCase().trim());
                 let colCode = -1, colTime = -1, colVal = -1, colType = -1, colMethod = -1, colAcc = -1, colAccNum = -1, colPartner = -1;
 
                 for (let c = 0; c < headers.length; c++) {
                     const h = headers[c];
-                    if (colCode === -1 && (h.includes('mã phiếu') || h.includes('mã hóa đơn') || h.includes('mã hđ') || h.includes('mã chứng từ') || h.includes('mã gd') || h === 'mã')) colCode = c;
-                    else if (colTime === -1 && (h.includes('thời gian') || h.includes('ngày bán') || h.includes('ngày lập') || h.includes('ngày tạo') || h.includes('ngày'))) colTime = c;
-                    else if (colVal === -1 && (h.includes('giá trị') || h.includes('tổng tiền') || h.includes('khách đã trả') || h.includes('thành tiền') || h.includes('số tiền'))) colVal = c;
-                    else if (colType === -1 && (h.includes('loại thu chi') || h.includes('loại thu') || h.includes('loại'))) colType = c;
-                    else if (colMethod === -1 && (h.includes('phương thức') || h.includes('hình thức'))) colMethod = c;
-                    else if (colAcc === -1 && (h.includes('tên tài khoản') || h.includes('ngân hàng'))) colAcc = c;
-                    else if (colAccNum === -1 && (h.includes('số tài khoản') || h.includes('số tk'))) colAccNum = c;
-                    else if (colPartner === -1 && (h.includes('người nộp') || h.includes('người nhận') || h.includes('khách hàng') || h.includes('đối tác'))) colPartner = c;
+                    if (!h) continue;
+                    if (colCode === -1 && (
+                        ['mã phiếu', 'mã hóa đơn', 'mã hđ', 'mã hd', 'mã chứng từ', 'mã ct', 'mã gd', 'mã giao dịch', 'mã đơn', 'số phiếu', 'số hóa đơn', 'số hđ', 'số hd', 'số chứng từ', 'số ct', 'số gd', 'phiếu thu', 'chứng từ', 'code', 'id', 'invoice', 'voucher'].some(k => h.includes(k)) ||
+                        h === 'mã' || h.startsWith('mã ') || h === 'số'
+                    )) {
+                        colCode = c;
+                    } else if (colVal === -1 && (
+                        ['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền thu', 'tiền', 'thực thu', 'đã thu', 'phải thu', 'doanh thu', 'doanh số', 'phát sinh có', 'phát sinh tăng', 'thu', 'chi', 'phát sinh', 'trị giá', 'tổng cộng', 'tổng', 'thanh toán', 'amount', 'total', 'value', 'price', 'money'].some(k => h.includes(k))
+                    )) {
+                        colVal = c;
+                    } else if (colTime === -1 && (
+                        ['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày hd', 'ngày ct', 'ngày chứng từ', 'ngày gd', 'ngày giao dịch', 'ngày', 'thời điểm', 'giờ', 'ngày giờ', 'date', 'time', 'datetime'].some(k => h.includes(k))
+                    )) {
+                        colTime = c;
+                    } else if (colType === -1 && (
+                        ['loại thu chi', 'loại thu', 'loại chi', 'loại giao dịch', 'loại phiếu', 'loại ct', 'loại'].some(k => h.includes(k))
+                    )) {
+                        colType = c;
+                    } else if (colMethod === -1 && (
+                        ['phương thức', 'hình thức', 'phương thức tt', 'hình thức tt'].some(k => h.includes(k))
+                    )) {
+                        colMethod = c;
+                    } else if (colAcc === -1 && (
+                        ['tên tài khoản', 'tên tk', 'ngân hàng', 'tên ngân hàng'].some(k => h.includes(k))
+                    )) {
+                        colAcc = c;
+                    } else if (colAccNum === -1 && (
+                        ['số tài khoản', 'số tk', 'stk'].some(k => h.includes(k))
+                    )) {
+                        colAccNum = c;
+                    } else if (colPartner === -1 && (
+                        ['người nộp/nhận', 'người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tên khách hàng', 'tên khách', 'người mua'].some(k => h.includes(k))
+                    )) {
+                        colPartner = c;
+                    }
+                }
+
+                // Tự động tìm cột fallback nếu chưa xác định được tiêu đề
+                if (colVal === -1) {
+                    let bestValCol = -1, bestNumCount = 0;
+                    for (let c = 0; c < headers.length; c++) {
+                        let numCount = 0;
+                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
+                            const n = parseNumberJs(rawData[r]?.[c]);
+                            if (n > 0) numCount++;
+                        }
+                        if (numCount > bestNumCount) {
+                            bestNumCount = numCount;
+                            bestValCol = c;
+                        }
+                    }
+                    if (bestValCol !== -1 && bestNumCount >= 1) colVal = bestValCol;
+                }
+
+                if (colCode === -1) {
+                    for (let c = 0; c < headers.length; c++) {
+                        if (c === colVal || c === colTime) continue;
+                        let strCount = 0;
+                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
+                            const val = String(rawData[r]?.[c] || '').trim();
+                            if (val.length >= 2 && isNaN(Number(val))) strCount++;
+                        }
+                        if (strCount >= 2) {
+                            colCode = c;
+                            break;
+                        }
+                    }
+                    if (colCode === -1) colCode = (colVal === 0 ? 1 : 0);
                 }
 
                 if (colCode === -1 || colVal === -1) {
-                    errors.push(`${file.name}: Thiếu cột Mã hoặc Giá trị`);
+                    errors.push(${file.name}: Không nhận diện được cột Mã hoặc cột Giá trị);
                     continue;
                 }
 
+                let fileRowsCount = 0;
                 for (let r = headerIdx + 1; r < rawData.length; r++) {
                     const row = rawData[r];
                     if (!row || row.length === 0) continue;
+
+                    // Lọc triệt để dòng tổng kết chân trang
+                    const rowText = row.map(cell => String(cell || '').toLowerCase().trim()).join(' ');
+                    if (['quỹ đầu kỳ', 'tổng thu', 'tổng chi', 'tồn quỹ'].some(k => rowText.includes(k))) continue;
 
                     const rawCode = String(row[colCode] || '').trim();
                     if (!rawCode) continue;
 
                     const lowCode = rawCode.toLowerCase();
-                    if (['tổng', 'quỹ', 'tồn', 'cộng', 'số dư', 'nan', 'none'].some(k => lowCode.includes(k))) continue;
+                    if (['tổng', 'quỹ', 'tồn', 'cộng', 'số dư', 'nan', 'none', 'null'].some(k => lowCode.includes(k))) continue;
 
                     let rawVal = row[colVal];
                     let numVal = parseNumberJs(rawVal);
@@ -2541,12 +2693,11 @@ try {
 
                     let rawTime = colTime !== -1 ? row[colTime] : '';
                     let parsedDt = parseDateTimeJs(rawTime);
-                    if (!parsedDt) continue;
 
                     allRows.push({
                         maPhieu: rawCode,
-                        thoiGian: formatDateTimeJs(parsedDt),
-                        parsedDt: parsedDt,
+                        thoiGian: parsedDt ? formatDateTimeJs(parsedDt) : (String(rawTime || '').trim() || '-'),
+                        parsedDt: parsedDt || new Date(0),
                         loaiThuChi: colType !== -1 ? String(row[colType] || '').trim() : 'Phiếu thu',
                         phuongThuc: colMethod !== -1 ? String(row[colMethod] || '').trim() : 'Chuyển khoản',
                         tenTK: colAcc !== -1 ? String(row[colAcc] || '').trim() : '',
@@ -2555,15 +2706,21 @@ try {
                         giaTri: numVal,
                         fileGoc: file.name
                     });
+                    fileRowsCount++;
                 }
-                fileNames.push(file.name);
+
+                if (fileRowsCount === 0) {
+                    errors.push(${file.name}: Không có dòng giao dịch nào có giá trị > 0);
+                } else {
+                    fileNames.push(file.name);
+                }
             } catch (err) {
-                errors.push(`${file.name}: ${err.message}`);
+                errors.push(${file.name}: );
             }
         }
 
         if (allRows.length === 0) {
-            alert('Không tìm thấy dữ liệu hóa đơn hợp lệ trong các file đã chọn!' + (errors.length ? '\n' + errors.join('\n') : ''));
+            alert('Không tìm thấy dữ liệu hóa đơn hợp lệ trong các file đã chọn!\n' + (errors.length ? 'Chi tiết:\n• ' + errors.join('\n• ') : ''));
             return;
         }
 
