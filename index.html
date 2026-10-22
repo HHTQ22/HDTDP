@@ -1068,8 +1068,10 @@ try {
     function removeAccents(str) {
         if (!str) return "";
         return String(str)
+            .replace(/đ/g, "d")
+            .replace(/Đ/g, "D")
             .normalize("NFD")
-            .replace(/[̀-ͯ]/g, "")
+            .replace(/[\u0300-\u036f]/g, "")
             .toLowerCase()
             .trim();
     }
@@ -1166,7 +1168,7 @@ try {
                 // 2. Tìm dòng tiêu đề tốt nhất và cột tiền
                 const PRIORITY_1 = ['gia tr', 'gia tri', 'gia try', 'tong tien', 'khach can tra', 'khach da tra', 'can tra', 'da tra', 'phai tra', 'tong thanh toan', 'tong cong', 'thanh tien', 'tien thu', 'can thu', 'phai thu', 'tong tien hang'];
                 const PRIORITY_2 = ['so tien', 'tien hang', 'doanh thu', 'doanh so', 'thanh toan'];
-                const EXCLUDE_KW = ['thue', 'vat', 'giam gia', 'chiet khau', 'stt'];
+                const EXCLUDE_KW = ['thue', 'vat', 'giam gia', 'chiet khau', 'stt', 'so tt', 'thu tu', 'so thu tu', 'so luong', 'ngay', 'gio', 'thoi gian', 'date', 'time', 'dvt'];
 
                 let bestHeaderIdx = -1;
                 let bestValColIdx = -1;
@@ -1213,12 +1215,16 @@ try {
                     for (let r = 0; r < Math.min(20, rawKiotRows.length); r++) {
                         const row = rawKiotRows[r] || [];
                         for (let c = 0; c < row.length; c++) {
+                            const cHeaderNorm = removeAccents(String(row[c] || ''));
+                            if (EXCLUDE_KW.some(ex => cHeaderNorm.includes(ex))) continue;
                             let count = 0;
+                            let cSum = 0;
                             for (let nextR = r + 1; nextR < Math.min(r + 30, rawKiotRows.length); nextR++) {
                                 const val = parseMoney(rawKiotRows[nextR] ? rawKiotRows[nextR][c] : 0);
                                 if (val >= 1000) count++;
+                                if (val > 0) cSum += val;
                             }
-                            if (count > maxNumCount) {
+                            if (count > maxNumCount || (count === maxNumCount && cSum > 0 && maxNumCol === -1)) {
                                 maxNumCount = count;
                                 maxNumCol = c;
                                 numColHeaderIdx = r;
@@ -1693,14 +1699,14 @@ try {
                 if (i % 5 === 0) await new Promise(r => setTimeout(r, 10));
             }
 
-            // Sheet TONKHO
+            // Sheet TONKHO chuẩn hóa khớp 100% bản PC
             const rowsTonKho = [
-                ['Mã', 'Tên', 'Tồn Cũ', 'Đã Xuất', 'Tồn Mới']
+                ['Mã hàng', 'Tên hàng', 'Tồn cũ', 'Đã xuất', 'Tồn mới']
             ];
             for (let item of misaCopy) {
                 const tonCu = item.origStock;
                 const daXuat = item.daXuat || 0;
-                const tonMoi = tonCu - daXuat;
+                const tonMoi = Math.max(0, tonCu - daXuat);
                 rowsTonKho.push([item.ma, item.ten, tonCu, daXuat, tonMoi]);
             }
 
@@ -1717,6 +1723,49 @@ try {
             generatedHoadonWb = XLSX.utils.book_new();
             const wsHoadon = XLSX.utils.aoa_to_sheet(rowsHoadon);
             const wsTonKho = XLSX.utils.aoa_to_sheet(rowsTonKho);
+
+            // Format số #,##0 cho các cột tiền / số lượng giống bản PC
+            const rangeHd = XLSX.utils.decode_range(wsHoadon['!ref']);
+            for (let R = 1; R <= rangeHd.e.r; R++) {
+                for (let C of [11, 12, 13, 15, 16]) { // SL, Đơn giá, Thành tiền, Tiền thuế GTGT, Tiền thuế sau VAT (0-indexed)
+                    const cellAddr = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (wsHoadon[cellAddr] && typeof wsHoadon[cellAddr].v === 'number') {
+                        wsHoadon[cellAddr].z = '#,##0';
+                    }
+                }
+            }
+
+            const rangeTon = XLSX.utils.decode_range(wsTonKho['!ref']);
+            for (let R = 1; R <= rangeTon.e.r; R++) {
+                for (let C of [2, 3, 4]) { // Tồn cũ, Đã xuất, Tồn mới (0-indexed)
+                    const cellAddr = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (wsTonKho[cellAddr] && typeof wsTonKho[cellAddr].v === 'number') {
+                        wsTonKho[cellAddr].z = '#,##0';
+                    }
+                }
+            }
+
+            // Auto-fit độ rộng cột khớp PC
+            const calcColsWidth = (aoa) => {
+                if (!aoa || !aoa.length) return [];
+                const numCols = aoa[0].length;
+                const widths = [];
+                for (let c = 0; c < numCols; c++) {
+                    let maxLen = 0;
+                    for (let r = 0; r < aoa.length; r++) {
+                        const val = aoa[r][c];
+                        if (val !== null && val !== undefined) {
+                            const s = String(val);
+                            if (s.length > maxLen) maxLen = s.length;
+                        }
+                    }
+                    widths.push({ wch: Math.max(maxLen + 4, 12) });
+                }
+                return widths;
+            };
+            wsHoadon['!cols'] = calcColsWidth(rowsHoadon);
+            wsTonKho['!cols'] = calcColsWidth(rowsTonKho);
+
             XLSX.utils.book_append_sheet(generatedHoadonWb, wsHoadon, "HOADON");
             XLSX.utils.book_append_sheet(generatedHoadonWb, wsTonKho, "TONKHO");
 
@@ -2513,12 +2562,36 @@ try {
     function findBestHeaderIdxJs(rawData) {
         let bestIdx = 0;
         let bestScore = -1;
-        const limit = Math.min(15, rawData.length);
+        const limit = Math.min(20, rawData.length);
         for (let i = 0; i < limit; i++) {
             const row = rawData[i];
             if (!row || !Array.isArray(row)) continue;
-            const nonBlank = row.filter(c => c !== null && c !== undefined && String(c).trim() !== '');
+            const nonBlank = row.filter(c => c !== null && c !== undefined && String(c).trim() !== '' && !['nan', 'none', 'null', 'undefined'].includes(String(c).trim().toLowerCase()));
             if (nonBlank.length < 2) continue;
+
+            // KIỂM TRA DÒNG DỮ LIỆU: Tiêu đề cột KHÔNG BAO GIỜ chứa ngày tháng hoặc số tiền lớn (>= 1.000đ)
+            let isDataRow = false;
+            for (let cell of nonBlank) {
+                if (cell instanceof Date || Object.prototype.toString.call(cell) === '[object Date]') {
+                    isDataRow = true;
+                    break;
+                }
+                const cs = String(cell).trim();
+                // Kiểm tra định dạng ngày (YYYY-MM-DD hoặc DD/MM/YYYY)
+                if (/^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}/.test(cs) || /^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}/.test(cs)) {
+                    isDataRow = true;
+                    break;
+                }
+                // Kiểm tra số tiền lớn (>= 1000)
+                const numStr = cs.replace(/[\s\u00A0đ₫VNDvnđ,\.]/gi, '');
+                if (/^\d+$/.test(numStr) && parseInt(numStr, 10) >= 1000) {
+                    isDataRow = true;
+                    break;
+                }
+            }
+            if (isDataRow) {
+                continue; // Bỏ qua ngay lập tức vì đây là dòng dữ liệu giao dịch
+            }
             
             let score = 0;
             let hasCode = false;
@@ -2526,18 +2599,28 @@ try {
             
             for (let cell of nonBlank) {
                 const s = String(cell).toLowerCase().trim();
-                if (['mã phiếu', 'mã hóa đơn', 'mã hđ', 'mã hd', 'mã chứng từ', 'mã ct', 'mã gd', 'mã giao dịch', 'mã đơn', 'mã', 'số phiếu', 'số hđ', 'số chứng từ', 'chứng từ', 'phiếu thu', 'phiếu chi', 'code', 'id', 'invoice', 'voucher'].some(k => s.includes(k) || s === k)) {
+                const sn = removeAccents(s);
+                if (!sn || sn.startsWith('phieu thu') || sn.startsWith('phieu chi')) continue;
+
+                // 1. Nhận diện tiêu đề cột Mã
+                if (['ma phieu', 'ma hoa don', 'ma hd', 'ma chung tu', 'ma ct', 'ma gd', 'ma giao dich', 'ma don', 'so phieu', 'so hoa don', 'so hd', 'so chung tu', 'so ct', 'so gd', 'voucher', 'invoice'].some(k => sn.includes(k)) || ['ma', 'code', 'id'].includes(sn)) {
                     hasCode = true;
-                    score += 3;
+                    score += 4;
                 }
-                if (!s.includes('loại') && (['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'thực thu', 'thực chi', 'đã thu', 'đã chi', 'phải thu', 'phải trả', 'doanh thu', 'amount', 'total', 'price', 'trị giá'].some(k => s.includes(k)) || ['tiền', 'thu', 'chi', 'tổng', 'giá'].includes(s))) {
+
+                // 2. Nhận diện tiêu đề cột Tiền / Giá trị / Thu / Chi
+                if (!sn.includes('loai') && (['gia tri', 'tong tien', 'thanh tien', 'khach da tra', 'khach can tra', 'khach thanh toan', 'tien khach tra', 'so tien', 'tien hang', 'tien thanh toan', 'tien thu', 'tien chi', 'thuc thu', 'thuc chi', 'da thu', 'da chi', 'phai thu', 'phai tra', 'doanh thu', 'amount', 'total', 'grand total', 'net amount', 'price'].some(k => sn.includes(k)) || ['thu', 'chi', 'tien', 'tong', 'gia'].includes(sn))) {
                     hasVal = true;
-                    score += 3;
+                    score += 4;
                 }
-                if (['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày ct', 'ngày', 'giờ', 'date', 'time'].some(k => s.includes(k))) {
+
+                // 3. Nhận diện cột Thời gian
+                if (['thoi gian', 'ngay ban', 'ngay lap', 'ngay tao', 'ngay hd', 'ngay ct', 'ngay chung tu', 'ngay gd', 'ngay giao dich', 'ngay', 'gio', 'date', 'time'].some(k => sn.includes(k))) {
                     score += 2;
                 }
-                if (['người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tài khoản', 'ngân hàng', 'phương thức', 'loại thu chi'].some(k => s.includes(k))) {
+
+                // 4. Các cột đối tác / tài khoản / phương thức
+                if (['nguoi nop', 'nguoi nhan', 'khach hang', 'doi tac', 'tai khoan', 'ngan hang', 'phuong thuc', 'loai thu chi'].some(k => sn.includes(k))) {
                     score += 1;
                 }
             }
@@ -2577,14 +2660,14 @@ try {
                 let maxRowsCount = -1;
                 for (let sName of wb.SheetNames) {
                     const sheet = wb.Sheets[sName];
-                    if (!sheet || !sheet['!ref']) continue;
+                    if (!sheet) continue;
                     const r = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ''});
                     if (r && r.length > maxRowsCount) {
                         maxRowsCount = r.length;
                         bestSheetData = r;
                     }
                 }
-                const rawData = bestSheetData || [];
+                const rawData = bestSheetData || (wb.SheetNames.length > 0 ? XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {header: 1, defval: ''}) : []);
 
                 if (!rawData || rawData.length === 0) {
                     errors.push(`${file.name}: File rỗng`);
@@ -2592,84 +2675,155 @@ try {
                 }
 
                 const headerIdx = findBestHeaderIdxJs(rawData);
-                const headers = (rawData[headerIdx] || []).map(x => String(x || '').toLowerCase().trim());
-                let colCode = -1, colTime = -1, colVal = -1, colType = -1, colMethod = -1, colAcc = -1, colAccNum = -1, colPartner = -1;
+                const rawHeaders = rawData[headerIdx] || [];
+                const headers = rawHeaders.map(x => String(x || '').toLowerCase().trim());
+                const headersNorm = rawHeaders.map(x => removeAccents(x));
+                let colCode = -1, colTime = -1, colVal = -1, colThu = -1, colChi = -1, colType = -1, colMethod = -1, colAcc = -1, colAccNum = -1, colPartner = -1;
 
-                for (let c = 0; c < headers.length; c++) {
-                    const h = headers[c];
-                    if (!h) continue;
-                    if (colType === -1 && (
-                        ['loại thu chi', 'loại thu', 'loại chi', 'loại giao dịch', 'loại phiếu', 'loại ct', 'loại', 'phân loại'].some(k => h.includes(k))
-                    )) {
-                        colType = c;
-                    } else if (colCode === -1 && (
-                        ['mã phiếu', 'mã hóa đơn', 'mã hđ', 'mã hd', 'mã chứng từ', 'mã ct', 'mã gd', 'mã giao dịch', 'mã đơn', 'số phiếu', 'số hóa đơn', 'số hđ', 'số hd', 'số chứng từ', 'số ct', 'số gd', 'phiếu thu', 'chứng từ', 'code', 'id', 'invoice', 'voucher'].some(k => h.includes(k)) ||
-                        h === 'mã' || h.startsWith('mã ') || h === 'số'
-                    )) {
-                        colCode = c;
-                    } else if (colVal === -1 && !h.includes('loại') && (
-                        ['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền thu', 'tiền chi', 'thực thu', 'thực chi', 'đã thu', 'đã chi', 'phải thu', 'phải trả', 'doanh thu', 'doanh số', 'phát sinh có', 'phát sinh tăng', 'trị giá', 'amount', 'total', 'value', 'price', 'money'].some(k => h.includes(k)) ||
-                        ['tiền', 'thu', 'chi', 'tổng', 'giá'].includes(h)
-                    )) {
-                        colVal = c;
-                    } else if (colTime === -1 && (
-                        ['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày hd', 'ngày ct', 'ngày chứng từ', 'ngày gd', 'ngày giao dịch', 'ngày', 'thời điểm', 'giờ', 'ngày giờ', 'date', 'time', 'datetime'].some(k => h.includes(k))
-                    )) {
+                const EXCLUDE_VAL_KW = ['stt', 'so tt', 'thu tu', 'so thu tu', 'so luong', 'sl', 'ma', 'loai', 'nam', 'thang', 'ngay', 'gio', 'thoi gian', 'date', 'time', 'dien thoai', 'sdt', 'dvt', 'don vi', 'thue', 'vat', 'chiet khau', 'giam gia', 'ghi chu', 'trang thai'];
+                const isSeqOrQty = (txt) => ['stt', 'so tt', 'thu tu', 'so thu tu', 'so luong', 'sl'].some(ex => txt === ex || txt.startsWith(ex + ' ') || txt.endsWith(' ' + ex));
+
+                // 1. Nhận diện cột thời gian trước để tránh trùng lặp với giá trị
+                for (let c = 0; c < headersNorm.length; c++) {
+                    const hn = headersNorm[c];
+                    if (!hn) continue;
+                    if (['thoi gian', 'ngay ban', 'ngay lap', 'ngay tao', 'ngay hd', 'ngay ct', 'ngay chung tu', 'ngay gd', 'ngay giao dich', 'thoi diem', 'ngay gio', 'datetime'].some(k => hn.includes(k)) || ['ngay', 'gio', 'date', 'time'].includes(hn)) {
                         colTime = c;
-                    } else if (colMethod === -1 && (
-                        ['phương thức', 'hình thức', 'phương thức tt', 'hình thức tt'].some(k => h.includes(k))
-                    )) {
+                        break;
+                    }
+                }
+
+                // 2. Nhận diện loại thu chi
+                for (let c = 0; c < headersNorm.length; c++) {
+                    const hn = headersNorm[c];
+                    if (!hn || c === colTime) continue;
+                    if (['loai thu chi', 'loai thu', 'loai chi', 'loai giao dich', 'loai phieu', 'loai ct', 'loai chung tu', 'loai hd', 'loai hoa don', 'loai', 'phan loai'].some(k => hn.includes(k))) {
+                        colType = c;
+                        break;
+                    }
+                }
+
+                // 3. Nhận diện cột Giá trị, Cột Thu, Cột Chi
+                const VAL_KW_P1 = [
+                    'gia tri', 'tong tien', 'thanh tien', 'khach da tra', 'khach can tra', 'khach tra', 'khach thanh toan',
+                    'tien khach tra', 'so tien', 'tien hang', 'tien thanh toan', 'tri gia', 'tong thanh toan', 'tong cong',
+                    'amount', 'total', 'grand total', 'net amount', 'price', 'money'
+                ];
+                for (let c = 0; c < headersNorm.length; c++) {
+                    const hn = headersNorm[c];
+                    if (!hn || c === colTime || c === colType) continue;
+                    if (isSeqOrQty(hn) || ['thue', 'vat', 'giam gia', 'chiet khau'].some(k => hn.includes(k))) continue;
+                    
+                    // Cột Thu riêng biệt
+                    if (colThu === -1 && (hn === 'thu' || hn.startsWith('thu ') || hn.startsWith('tien thu') || hn.startsWith('gia tri thu') || hn.includes('thuc thu') || hn.includes('da thu') || hn === 'phat sinh co' || hn === 'phat sinh tang')) {
+                        colThu = c;
+                    }
+                    // Cột Chi riêng biệt
+                    if (colChi === -1 && (hn === 'chi' || hn.startsWith('chi ') || hn.startsWith('tien chi') || hn.startsWith('gia tri chi') || hn.includes('thuc chi') || hn.includes('da chi') || hn === 'phat sinh no' || hn === 'phat sinh giam')) {
+                        colChi = c;
+                    }
+                    // Cột giá trị tổng thể
+                    if (colVal === -1 && !hn.includes('loai') && VAL_KW_P1.some(k => hn.includes(k))) {
+                        colVal = c;
+                    }
+                }
+
+                // Pass 2 cho colVal nếu chưa có
+                if (colVal === -1 && colThu === -1 && colChi === -1) {
+                    for (let c = 0; c < headersNorm.length; c++) {
+                        const hn = headersNorm[c];
+                        if (!hn || c === colTime || c === colType) continue;
+                        if (EXCLUDE_VAL_KW.some(k => hn.includes(k))) continue;
+                        if (['tien', 'don gia', 'gia ban', 'tong', 'gia', 'thu', 'chi'].includes(hn)) {
+                            colVal = c;
+                            break;
+                        }
+                    }
+                }
+
+                // 4. Nhận diện cột Mã phiếu / Mã hóa đơn
+                const CODE_KW = ['ma phieu', 'ma hoa don', 'ma hd', 'ma chung tu', 'ma ct', 'ma gd', 'ma giao dich', 'ma don', 'so phieu', 'so hoa don', 'so hd', 'so chung tu', 'so ct', 'so gd', 'code', 'id', 'invoice', 'voucher'];
+                for (let c = 0; c < headersNorm.length; c++) {
+                    const hn = headersNorm[c];
+                    if (!hn || c === colTime || c === colVal || c === colThu || c === colChi || c === colType) continue;
+                    if (isSeqOrQty(hn)) continue;
+                    if (CODE_KW.some(k => hn.includes(k)) || hn === 'ma' || (hn.startsWith('ma ') && !hn.startsWith('ma vach'))) {
+                        colCode = c;
+                        break;
+                    }
+                }
+
+                // 5. Nhận diện các cột thông tin kèm theo
+                for (let c = 0; c < headersNorm.length; c++) {
+                    if (c === colTime || c === colVal || c === colThu || c === colChi || c === colCode || c === colType) continue;
+                    const hn = headersNorm[c];
+                    if (!hn) continue;
+                    if (colMethod === -1 && ['phuong thuc', 'hinh thuc', 'phuong thuc tt', 'hinh thuc tt'].some(k => hn.includes(k))) {
                         colMethod = c;
-                    } else if (colAcc === -1 && (
-                        ['tên tài khoản', 'tên tk', 'ngân hàng', 'tên ngân hàng'].some(k => h.includes(k))
-                    )) {
+                    } else if (colAcc === -1 && ['ten tai khoan', 'ten tk', 'ngan hang', 'ten ngan hang'].some(k => hn.includes(k))) {
                         colAcc = c;
-                    } else if (colAccNum === -1 && (
-                        ['số tài khoản', 'số tk', 'stk'].some(k => h.includes(k))
-                    )) {
+                    } else if (colAccNum === -1 && ['so tai khoan', 'so tk', 'stk'].some(k => hn.includes(k))) {
                         colAccNum = c;
-                    } else if (colPartner === -1 && (
-                        ['người nộp/nhận', 'người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tên khách hàng', 'tên khách', 'người mua'].some(k => h.includes(k))
-                    )) {
+                    } else if (colPartner === -1 && ['nguoi nop/nhan', 'nguoi nop', 'nguoi nhan', 'khach hang', 'doi tac', 'ten khach hang', 'ten khach', 'nguoi mua', 'doi tuong'].some(k => hn.includes(k))) {
                         colPartner = c;
                     }
                 }
 
-                // Tự động tìm cột fallback nếu chưa xác định được tiêu đề
-                if (colVal === -1) {
-                    let bestValCol = -1, bestNumCount = 0;
-                    for (let c = 0; c < headers.length; c++) {
-                        if (c === colType || headers[c].includes('loại')) continue;
-                        let numCount = 0;
-                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
+                // 6. Fallback nếu chưa xác định được cột giá trị
+                if (colVal === -1 && colThu === -1 && colChi === -1) {
+                    let bestValCol = -1, bestSum = 0, bestCount1000 = 0;
+                    for (let c = 0; c < headersNorm.length; c++) {
+                        if (c === colCode || c === colTime || c === colType) continue;
+                        const hn = headersNorm[c];
+                        if (EXCLUDE_VAL_KW.some(k => hn.includes(k)) || isSeqOrQty(hn)) continue;
+
+                        let cSum = 0, cCount1000 = 0;
+                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 40, rawData.length); r++) {
                             const n = parseNumberJs(rawData[r]?.[c]);
-                            if (n > 0) numCount++;
+                            if (n > 0) {
+                                cSum += n;
+                                if (n >= 1000) cCount1000++;
+                            }
                         }
-                        if (numCount > bestNumCount) {
-                            bestNumCount = numCount;
+                        if (cCount1000 > bestCount1000 || (cCount1000 === bestCount1000 && cSum > bestSum)) {
+                            bestCount1000 = cCount1000;
+                            bestSum = cSum;
                             bestValCol = c;
                         }
                     }
-                    if (bestValCol !== -1 && bestNumCount >= 1) colVal = bestValCol;
+                    if (bestValCol !== -1 && (bestCount1000 >= 1 || bestSum >= 1000)) {
+                        colVal = bestValCol;
+                    }
                 }
 
+                // 7. Fallback cho cột Mã
                 if (colCode === -1) {
-                    for (let c = 0; c < headers.length; c++) {
-                        if (c === colVal || c === colTime || c === colType) continue;
+                    for (let c = 0; c < headersNorm.length; c++) {
+                        if (c === colVal || c === colThu || c === colChi || c === colTime || c === colType) continue;
+                        const hn = headersNorm[c];
+                        if (isSeqOrQty(hn)) continue;
+
                         let strCount = 0;
-                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
+                        for (let r = headerIdx + 1; r < Math.min(headerIdx + 20, rawData.length); r++) {
                             const val = String(rawData[r]?.[c] || '').trim();
                             if (val.length >= 2 && isNaN(Number(val))) strCount++;
                         }
-                        if (strCount >= 2) {
+                        if (strCount >= 1) {
                             colCode = c;
                             break;
                         }
                     }
-                    if (colCode === -1) colCode = (colVal === 0 ? 1 : 0);
+                    if (colCode === -1) {
+                        for (let c = 0; c < headersNorm.length; c++) {
+                            if (c !== colVal && c !== colThu && c !== colChi && c !== colTime && c !== colType && !isSeqOrQty(headersNorm[c])) {
+                                colCode = c;
+                                break;
+                            }
+                        }
+                    }
                 }
 
-                if (colCode === -1 || colVal === -1) {
+                if (colCode === -1 || (colVal === -1 && colThu === -1 && colChi === -1)) {
                     errors.push(`${file.name}: Không nhận diện được cột Mã hoặc cột Giá trị`);
                     continue;
                 }
@@ -2679,32 +2833,73 @@ try {
                     const row = rawData[r];
                     if (!row || row.length === 0) continue;
 
-                    // Lọc triệt để dòng tổng kết chân trang
-                    const rowText = row.map(cell => String(cell || '').toLowerCase().trim()).join(' ');
-                    if (['quỹ đầu kỳ', 'tổng thu', 'tổng chi', 'tồn quỹ'].some(k => rowText.includes(k))) continue;
-
-                    const rawCode = String(row[colCode] || '').trim();
+                    const rawCode = String(row[colCode] !== undefined && row[colCode] !== null ? row[colCode] : '').trim();
                     if (!rawCode) continue;
 
                     const lowCode = rawCode.toLowerCase();
-                    if (['tổng', 'quỹ', 'tồn', 'cộng', 'số dư', 'nan', 'none', 'null'].some(k => lowCode.includes(k))) continue;
+                    if (['tổng', 'quỹ', 'tồn', 'cộng', 'số dư', 'nan', 'none', 'null', 'undefined'].some(k => lowCode.includes(k) && !lowCode.startsWith('tt') && !lowCode.startsWith('hd') && !lowCode.startsWith('pt') && !lowCode.startsWith('pc'))) {
+                        continue;
+                    }
 
-                    let rawVal = row[colVal];
-                    let numVal = parseNumberJs(rawVal);
+                    // Lọc dòng chân trang tổng kết
+                    const rowText = row.map(cell => String(cell || '').toLowerCase().trim()).join(' ');
+                    if (['quỹ đầu kỳ', 'tổng thu', 'tổng chi', 'tồn quỹ', 'tổng cộng'].some(k => rowText.includes(k)) && (!rawCode || ['tổng', 'quỹ', 'tồn', 'cộng', 'số dư'].some(k => lowCode.includes(k)) || !row[colType])) {
+                        continue;
+                    }
+
+                    // Trích xuất số tiền: Ưu tiên colVal -> colThu -> colChi -> Fallback quét ô có tiền >= 1.000
+                    let numVal = 0;
+                    let isChiRow = false;
+                    if (colVal !== -1 && row[colVal] !== undefined && row[colVal] !== '') {
+                        numVal = parseNumberJs(row[colVal]);
+                    }
+                    if (numVal <= 0 && colThu !== -1 && row[colThu] !== undefined && row[colThu] !== '') {
+                        numVal = parseNumberJs(row[colThu]);
+                    }
+                    if (numVal <= 0 && colChi !== -1 && row[colChi] !== undefined && row[colChi] !== '') {
+                        numVal = parseNumberJs(row[colChi]);
+                        if (numVal > 0) isChiRow = true;
+                    }
+                    // Fallback quét tất cả các ô trong dòng nếu vẫn chưa có giá trị
+                    if (numVal <= 0) {
+                        for (let c = 0; c < row.length; c++) {
+                            if (c === colCode || c === colTime || c === colType) continue;
+                            const hn = headersNorm[c] || '';
+                            if (isSeqOrQty(hn)) continue;
+                            const testN = parseNumberJs(row[c]);
+                            if (testN >= 1000) {
+                                numVal = testN;
+                                break;
+                            }
+                        }
+                    }
+
                     if (numVal <= 0) continue;
 
                     let rawTime = colTime !== -1 ? row[colTime] : '';
                     let parsedDt = parseDateTimeJs(rawTime);
 
+                    const sanitizeStr = (v) => {
+                        const s = String(v || '').trim();
+                        return ['nan', 'none', 'null', 'undefined'].includes(s.toLowerCase()) ? '' : s;
+                    };
+
+                    let loaiThuChiVal = 'Phiếu thu';
+                    if (colType !== -1 && sanitizeStr(row[colType])) {
+                        loaiThuChiVal = sanitizeStr(row[colType]);
+                    } else if (isChiRow) {
+                        loaiThuChiVal = 'Phiếu chi';
+                    }
+
                     allRows.push({
                         maPhieu: rawCode,
-                        thoiGian: parsedDt ? formatDateTimeJs(parsedDt) : (String(rawTime || '').trim() || '-'),
+                        thoiGian: parsedDt ? formatDateTimeJs(parsedDt) : '-',
                         parsedDt: parsedDt || new Date(0),
-                        loaiThuChi: colType !== -1 ? String(row[colType] || '').trim() : 'Phiếu thu',
-                        phuongThuc: colMethod !== -1 ? String(row[colMethod] || '').trim() : 'Chuyển khoản',
-                        tenTK: colAcc !== -1 ? String(row[colAcc] || '').trim() : '',
-                        soTK: colAccNum !== -1 ? String(row[colAccNum] || '').trim() : '',
-                        nguoiNopNhan: colPartner !== -1 ? String(row[colPartner] || '').trim() : '',
+                        loaiThuChi: loaiThuChiVal,
+                        phuongThuc: colMethod !== -1 ? (sanitizeStr(row[colMethod]) || 'Chuyển khoản') : 'Chuyển khoản',
+                        tenTK: colAcc !== -1 ? sanitizeStr(row[colAcc]) : '',
+                        soTK: colAccNum !== -1 ? sanitizeStr(row[colAccNum]) : '',
+                        nguoiNopNhan: colPartner !== -1 ? sanitizeStr(row[colPartner]) : '',
                         giaTri: numVal,
                         fileGoc: file.name
                     });
@@ -2750,7 +2945,8 @@ try {
         rows.sort((a, b) => {
             let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
             let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
-            return sortMode === 'asc' ? tA - tB : tB - tA;
+            if (tA !== tB) return sortMode === 'asc' ? tA - tB : tB - tA;
+            return sortMode === 'asc' ? String(a.maPhieu).localeCompare(String(b.maPhieu)) : String(b.maPhieu).localeCompare(String(a.maPhieu));
         });
 
         const kpiFiles = document.getElementById('kpiGomFilesCount');
@@ -2849,12 +3045,13 @@ try {
         rows.sort((a, b) => {
             let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
             let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
-            return sortMode === 'asc' ? tA - tB : tB - tA;
+            if (tA !== tB) return sortMode === 'asc' ? tA - tB : tB - tA;
+            return sortMode === 'asc' ? String(a.maPhieu).localeCompare(String(b.maPhieu)) : String(b.maPhieu).localeCompare(String(a.maPhieu));
         });
 
-        const aoa = [
-            ["STT", "Mã phiếu", "Thời gian", "Loại thu chi", "Phương thức", "Tên tài khoản", "Số tài khoản", "Người nộp/nhận", "Giá trị", "File nguồn"]
-        ];
+        const headers = ["STT", "Mã phiếu", "Thời gian", "Loại thu chi", "Phương thức", "Tên tài khoản", "Số tài khoản", "Người nộp/nhận", "Giá trị", "File nguồn"];
+        const aoa = [headers];
+
         let totalSum = 0;
         rows.forEach((r, idx) => {
             totalSum += r.giaTri;
@@ -2871,22 +3068,47 @@ try {
                 r.fileGoc
             ]);
         });
-        aoa.push(["TỔNG CỘNG", "", "", "", "", "", "", "", totalSum, ""]);
+        const totalRowIdx = rows.length + 2;
+        aoa.push(["TỔNG CỘNG", null, null, null, null, null, null, null, totalSum, null]);
 
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(aoa);
-        ws['!cols'] = [
-            {wch: 6},
-            {wch: 16},
-            {wch: 20},
-            {wch: 18},
-            {wch: 14},
-            {wch: 26},
-            {wch: 12},
-            {wch: 20},
-            {wch: 14},
-            {wch: 20}
-        ];
+
+        // Định dạng cột Giá trị và TỔNG CỘNG chuẩn số #,##0 và công thức SUM y hệt PC
+        for (let r = 2; r <= rows.length + 1; r++) {
+            const cell = ws['I' + r];
+            if (cell) {
+                cell.t = 'n';
+                cell.z = '#,##0';
+            }
+            const sttCell = ws['A' + r];
+            if (sttCell) {
+                sttCell.t = 'n';
+                sttCell.z = '#,##0';
+            }
+        }
+        const sumCell = ws['I' + totalRowIdx];
+        if (sumCell) {
+            sumCell.t = 'n';
+            sumCell.v = totalSum;
+            sumCell.f = `SUM(I2:I${totalRowIdx - 1})`;
+            sumCell.z = '#,##0';
+        }
+
+        // Tự động căn chỉnh độ rộng cột (Auto-fit width) giống bản PC
+        const colWidths = headers.map((h, colIdx) => {
+            let maxLen = h.length;
+            for (let rowIdx = 1; rowIdx < aoa.length; rowIdx++) {
+                const cellVal = aoa[rowIdx][colIdx];
+                if (cellVal !== null && cellVal !== undefined) {
+                    const strVal = String(cellVal);
+                    if (strVal.length > maxLen) maxLen = strVal.length;
+                }
+            }
+            return { wch: Math.max(maxLen + 3, 11) };
+        });
+        ws['!cols'] = colWidths;
+
         XLSX.utils.book_append_sheet(wb, ws, "HOADON_TONG");
         return wb;
     }
@@ -2898,7 +3120,13 @@ try {
             return;
         }
         const now = new Date();
-        const fn = `GOM_HOADON_TONG_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const fn = `GOM_HOADON_TONG_${y}${m}${d}_${hh}${mm}${ss}.xlsx`;
         downloadExcelFile(wb, fn);
         log(`[✔] Đã tải về file tổng: ${fn}`);
     }
@@ -2910,7 +3138,13 @@ try {
             return;
         }
         const now = new Date();
-        const fn = `GOM_HOADON_TONG_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const d = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        const fn = `GOM_HOADON_TONG_${y}${m}${d}_${hh}${mm}${ss}.xlsx`;
         const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
         const blob = new Blob([wbout], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
 
@@ -2951,7 +3185,8 @@ try {
         rows.sort((a, b) => {
             let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
             let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
-            return sortMode === 'asc' ? tA - tB : tB - tA;
+            if (tA !== tB) return sortMode === 'asc' ? tA - tB : tB - tA;
+            return sortMode === 'asc' ? String(a.maPhieu).localeCompare(String(b.maPhieu)) : String(b.maPhieu).localeCompare(String(a.maPhieu));
         });
 
         kiotDataRows = rows.map(r => Math.round(r.giaTri));
