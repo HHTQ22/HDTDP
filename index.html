@@ -2530,14 +2530,14 @@ try {
                     hasCode = true;
                     score += 3;
                 }
-                if (['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền', 'thực thu', 'đã thu', 'doanh thu', 'thu', 'chi', 'thanh toán', 'amount', 'total', 'price', 'trị giá'].some(k => s.includes(k) || s === k)) {
+                if (!s.includes('loại') && (['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'thực thu', 'thực chi', 'đã thu', 'đã chi', 'phải thu', 'phải trả', 'doanh thu', 'amount', 'total', 'price', 'trị giá'].some(k => s.includes(k)) || ['tiền', 'thu', 'chi', 'tổng', 'giá'].includes(s))) {
                     hasVal = true;
                     score += 3;
                 }
                 if (['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày ct', 'ngày', 'giờ', 'date', 'time'].some(k => s.includes(k))) {
                     score += 2;
                 }
-                if (['người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tài khoản', 'ngân hàng', 'phương thức'].some(k => s.includes(k))) {
+                if (['người nộp', 'người nhận', 'khách hàng', 'đối tác', 'tài khoản', 'ngân hàng', 'phương thức', 'loại thu chi'].some(k => s.includes(k))) {
                     score += 1;
                 }
             }
@@ -2587,7 +2587,7 @@ try {
                 const rawData = bestSheetData || [];
 
                 if (!rawData || rawData.length === 0) {
-                    errors.push(${file.name}: File rỗng);
+                    errors.push(`${file.name}: File rỗng`);
                     continue;
                 }
 
@@ -2598,23 +2598,24 @@ try {
                 for (let c = 0; c < headers.length; c++) {
                     const h = headers[c];
                     if (!h) continue;
-                    if (colCode === -1 && (
+                    if (colType === -1 && (
+                        ['loại thu chi', 'loại thu', 'loại chi', 'loại giao dịch', 'loại phiếu', 'loại ct', 'loại', 'phân loại'].some(k => h.includes(k))
+                    )) {
+                        colType = c;
+                    } else if (colCode === -1 && (
                         ['mã phiếu', 'mã hóa đơn', 'mã hđ', 'mã hd', 'mã chứng từ', 'mã ct', 'mã gd', 'mã giao dịch', 'mã đơn', 'số phiếu', 'số hóa đơn', 'số hđ', 'số hd', 'số chứng từ', 'số ct', 'số gd', 'phiếu thu', 'chứng từ', 'code', 'id', 'invoice', 'voucher'].some(k => h.includes(k)) ||
                         h === 'mã' || h.startsWith('mã ') || h === 'số'
                     )) {
                         colCode = c;
-                    } else if (colVal === -1 && (
-                        ['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền thu', 'tiền', 'thực thu', 'đã thu', 'phải thu', 'doanh thu', 'doanh số', 'phát sinh có', 'phát sinh tăng', 'thu', 'chi', 'phát sinh', 'trị giá', 'tổng cộng', 'tổng', 'thanh toán', 'amount', 'total', 'value', 'price', 'money'].some(k => h.includes(k))
+                    } else if (colVal === -1 && !h.includes('loại') && (
+                        ['giá trị', 'tổng tiền', 'thành tiền', 'khách đã trả', 'khách thanh toán', 'số tiền', 'tiền hàng', 'tiền thanh toán', 'tiền thu', 'tiền chi', 'thực thu', 'thực chi', 'đã thu', 'đã chi', 'phải thu', 'phải trả', 'doanh thu', 'doanh số', 'phát sinh có', 'phát sinh tăng', 'trị giá', 'amount', 'total', 'value', 'price', 'money'].some(k => h.includes(k)) ||
+                        ['tiền', 'thu', 'chi', 'tổng', 'giá'].includes(h)
                     )) {
                         colVal = c;
                     } else if (colTime === -1 && (
                         ['thời gian', 'ngày bán', 'ngày lập', 'ngày tạo', 'ngày hđ', 'ngày hd', 'ngày ct', 'ngày chứng từ', 'ngày gd', 'ngày giao dịch', 'ngày', 'thời điểm', 'giờ', 'ngày giờ', 'date', 'time', 'datetime'].some(k => h.includes(k))
                     )) {
                         colTime = c;
-                    } else if (colType === -1 && (
-                        ['loại thu chi', 'loại thu', 'loại chi', 'loại giao dịch', 'loại phiếu', 'loại ct', 'loại'].some(k => h.includes(k))
-                    )) {
-                        colType = c;
                     } else if (colMethod === -1 && (
                         ['phương thức', 'hình thức', 'phương thức tt', 'hình thức tt'].some(k => h.includes(k))
                     )) {
@@ -2638,6 +2639,7 @@ try {
                 if (colVal === -1) {
                     let bestValCol = -1, bestNumCount = 0;
                     for (let c = 0; c < headers.length; c++) {
+                        if (c === colType || headers[c].includes('loại')) continue;
                         let numCount = 0;
                         for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
                             const n = parseNumberJs(rawData[r]?.[c]);
@@ -2653,7 +2655,7 @@ try {
 
                 if (colCode === -1) {
                     for (let c = 0; c < headers.length; c++) {
-                        if (c === colVal || c === colTime) continue;
+                        if (c === colVal || c === colTime || c === colType) continue;
                         let strCount = 0;
                         for (let r = headerIdx + 1; r < Math.min(headerIdx + 15, rawData.length); r++) {
                             const val = String(rawData[r]?.[c] || '').trim();
@@ -2668,7 +2670,7 @@ try {
                 }
 
                 if (colCode === -1 || colVal === -1) {
-                    errors.push(${file.name}: Không nhận diện được cột Mã hoặc cột Giá trị);
+                    errors.push(`${file.name}: Không nhận diện được cột Mã hoặc cột Giá trị`);
                     continue;
                 }
 
@@ -2710,12 +2712,12 @@ try {
                 }
 
                 if (fileRowsCount === 0) {
-                    errors.push(${file.name}: Không có dòng giao dịch nào có giá trị > 0);
+                    errors.push(`${file.name}: Không có dòng giao dịch nào có giá trị > 0`);
                 } else {
                     fileNames.push(file.name);
                 }
             } catch (err) {
-                errors.push(${file.name}: );
+                errors.push(`${file.name}: ${err.message || err}`);
             }
         }
 
