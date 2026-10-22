@@ -2507,7 +2507,7 @@ try {
         let h = String(dt.getHours()).padStart(2, '0');
         let mi = String(dt.getMinutes()).padStart(2, '0');
         let s = String(dt.getSeconds()).padStart(2, '0');
-        return ${y}-- ::;
+        return `${y}-${m}-${d} ${h}:${mi}:${s}`;
     }
 
     function findBestHeaderIdxJs(rawData) {
@@ -2558,7 +2558,7 @@ try {
         let fileNames = [];
         let errors = [];
 
-        log([*] Bắt đầu đọc và gom  file...);
+        log(`[*] Bắt đầu đọc và gom ${files.length} file...`);
 
         for (let file of files) {
             try {
