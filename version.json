@@ -1,6 +1,6 @@
 {
-  "version": "2.14",
-  "release_date": "19/10/2026",
-  "changelog": "- Nâng cấp thuật toán bốc hàng: Ưu tiên bốc mặt hàng tồn kho nhiều (>20 cái) trước, bảo vệ kho\n- Mobile: Nâng cấp gửi trực tiếp FILE EXCEL (.xlsx) vào Zalo qua Web Share API\n- Mobile: Tự động hóa ngầm cột tiền KiotViet, ẩn dialog thừa giúp giao diện gọn gàng\n- Quy hoạch cấu trúc thư mục PC / Mobile / GitHub rõ ràng, thao tác 1-Click",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.14/PM_HoaDon.zip"
+  "version": "2.15",
+  "release_date": "22/10/2026",
+  "changelog": "- TÍNH NĂNG MỚI: Thêm TAB Gom File Hóa Đơn trên cả PC và Mobile (Gom nhiều file Excel/CSV thành 1 file tổng duy nhất)\n- Tự động lọc sạch các dòng chân trang: Quỹ đầu kỳ, Tổng thu, Tổng chi, Tồn quỹ\n- Tự động sắp xếp chuẩn xác theo trình tự thời gian trong ngày (từ sáng đến tối)\n- Nút 1-Click: Dùng File Này Để Tạo HĐ Thuế nạp thẳng vào quy trình KiotViet\n- Tối ưu hóa kịch bản đóng gói PyInstaller & nén tar siêu tốc",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.15/PM_HoaDon.zip"
 }

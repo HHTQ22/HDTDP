@@ -447,7 +447,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.14)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.15)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -465,6 +465,18 @@
         <div id="updateChangelog" style="margin-top:6px; font-size:11px; color:#cbd5e1; line-height:1.4;"></div>
     </div>
 
+    <!-- Main Tab Navigation -->
+    <div style="display:flex; gap:8px; margin-bottom:14px; background:#1e293b; padding:4px; border-radius:14px; border:1px solid #334155;">
+        <button id="btnTabTaoHd" type="button" onclick="switchMainTabMobile('taohd')" style="flex:1; padding:10px 6px; font-size:12px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; box-shadow:0 2px 8px rgba(2,132,199,0.4); transition:all 0.2s;">
+            ⚡ TẠO HÓA ĐƠN THUẾ
+        </button>
+        <button id="btnTabGomFile" type="button" onclick="switchMainTabMobile('gomfile')" style="flex:1; padding:10px 6px; font-size:12px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+            📑 GOM FILE HÓA ĐƠN
+        </button>
+    </div>
+
+    <!-- VIEW 1: TẠO HÓA ĐƠN THUẾ -->
+    <div id="viewTaoHoadon">
     <!-- KPI Dashboard -->
     <div class="kpi-grid">
         <div class="kpi-card">
@@ -499,6 +511,7 @@
                     📂 Chọn Kiot
                     <input type="file" id="fileKiotInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleKiotFile(this)">
                 </label>
+                <button type="button" onclick="switchMainTabMobile('gomfile')" style="white-space:nowrap; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; color:#38bdf8; border-radius:10px; padding:8px 12px; font-size:12px; font-weight:700; cursor:pointer;" title="Gom nhiều file hóa đơn thành 1 file">📑 Gom file</button>
                 <div id="kiotFileName" class="file-name-display">Chưa chọn file Kiot...</div>
             </div>
             <!-- Khung chọn cột số tiền Kiot (tự động nhận diện + cho phép đổi cột linh hoạt) -->
@@ -691,6 +704,103 @@
             </table>
         </div>
     </div>
+
+    </div>
+    <!-- END VIEW 1: TẠO HÓA ĐƠN THUẾ -->
+
+    <!-- VIEW 2: GOM FILE HÓA ĐƠN -->
+    <div id="viewGomFile" style="display:none;">
+        <div class="section-box" style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div class="section-title" style="margin-bottom:0;">🛠️ Gom & Sắp Xếp File Hóa Đơn</div>
+                <button type="button" onclick="resetGomFilesMobile()" style="background:#334155; color:#cbd5e1; border:1px solid #475569; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">🧹 Xóa</button>
+            </div>
+            <p style="font-size:11px; color:#94a3b8; line-height:1.5; margin-bottom:12px;">
+                Hỗ trợ chọn cùng lúc nhiều file Kiot / Sổ quỹ (.xlsx, .xls, .csv). Hệ thống tự động bóc tách dữ liệu, lọc bỏ dòng quỹ/tổng và sắp xếp theo trình tự thời gian chuẩn xác.
+            </p>
+
+            <!-- Nút chọn nhiều file -->
+            <input type="file" id="fileMergeMobileInput" multiple accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleMergeFilesMobile(this)">
+            <label for="fileMergeMobileInput" class="btn-run" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px;">
+                <span>📂 CHỌN CÁC FILE HÓA ĐƠN CẦN GOM...</span>
+            </label>
+
+            <!-- Tùy chọn sắp xếp & Lọc trùng -->
+            <div style="background:rgba(0,0,0,0.25); border-radius:12px; padding:10px 12px; border:1px solid #334155; margin-bottom:12px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:12px; color:#94a3b8; font-weight:600;">Sắp xếp thời gian:</span>
+                    <select id="selectGomSortMobile" class="input-ctrl" style="width:190px; padding:6px 8px; font-size:11px;" onchange="applyGomSortMobile()">
+                        <option value="asc">⬆️ Cũ ➔ Mới (Sáng đến Tối)</option>
+                        <option value="desc">⬇️ Mới ➔ Cũ (Tối đến Sáng)</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="checkGomDedupMobile" onchange="applyGomSortMobile()" style="width:16px; height:16px; cursor:pointer;">
+                    <label for="checkGomDedupMobile" style="font-size:12px; color:#cbd5e1; cursor:pointer;">Loại bỏ phiếu trùng mã (Deduplicate)</label>
+                </div>
+            </div>
+
+            <!-- KPI Mini Cards -->
+            <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;">
+                <div class="kpi-card" style="padding:10px 8px;">
+                    <div class="kpi-title">📁 Số File Đã Chọn</div>
+                    <div id="kpiGomFilesCount" class="kpi-val" style="color:#60cdff; font-size:15px;">0 file</div>
+                </div>
+                <div class="kpi-card" style="padding:10px 8px;">
+                    <div class="kpi-title">📊 Tổng Số Phiếu</div>
+                    <div id="kpiGomRowsCount" class="kpi-val" style="color:#e5a443; font-size:15px;">0 phiếu</div>
+                </div>
+                <div class="kpi-card" style="padding:10px 8px;">
+                    <div class="kpi-title">💰 Tổng Tiền Giao Dịch</div>
+                    <div id="kpiGomTotalMoney" class="kpi-val" style="color:#4ade80; font-size:15px;">0 đ</div>
+                </div>
+                <div class="kpi-card" style="padding:10px 8px;">
+                    <div class="kpi-title">🕒 Khoảng Thời Gian</div>
+                    <div id="kpiGomTimeRange" class="kpi-val" style="color:#b180f0; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Chưa có dữ liệu</div>
+                </div>
+            </div>
+
+            <!-- Nút Hành Động Xuất / Dùng làm Kiot -->
+            <div id="gomActionBox" style="display:none; flex-direction:column; gap:8px; margin-bottom:12px;">
+                <button type="button" class="btn-download btn-download-hoadon" onclick="downloadMergedExcelMobile()">
+                    💾 Tải Về File Tổng (.xlsx)
+                </button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                    <button type="button" class="btn-download" style="background:#0284c7; color:#fff; margin-bottom:0;" onclick="shareMergedExcelMobile()">
+                        📲 Gửi Zalo / Mở
+                    </button>
+                    <button type="button" class="btn-download" style="background:linear-gradient(135deg, #10b981, #059669); color:#fff; margin-bottom:0;" onclick="useMergedAsKiotMobile()">
+                        🚀 Dùng Tạo HĐ Thuế
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bảng Xem Trước Giao Dịch Đã Gom -->
+            <div id="gomPreviewBox" style="display:none; margin-top:10px; background:#0f172a; border:1px solid #334155; border-radius:12px; padding:10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                    <span style="font-size:12px; font-weight:700; color:#38bdf8;">👁️ Bảng Dữ Liệu Sau Khi Sắp Xếp</span>
+                    <span id="gomPreviewBadge" style="font-size:10px; color:#94a3b8;">0 dòng</span>
+                </div>
+                <div style="max-height:280px; overflow-y:auto; overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:11px; color:#cbd5e1; min-width:550px;">
+                        <thead>
+                            <tr style="background:#1e293b; color:#94a3b8; text-align:left; border-bottom:1px solid #334155;">
+                                <th style="padding:6px; text-align:center; width:35px;">STT</th>
+                                <th style="padding:6px;">Mã phiếu</th>
+                                <th style="padding:6px; text-align:center;">Thời gian</th>
+                                <th style="padding:6px; text-align:right;">Giá trị</th>
+                                <th style="padding:6px;">Người nộp/nhận</th>
+                                <th style="padding:6px;">File nguồn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gomTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END VIEW 2: GOM FILE HÓA ĐƠN -->
 
     <!-- Console Log -->
     <div class="section-box" style="padding:10px 12px;margin-bottom:0;">
@@ -1940,7 +2050,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.14";
+    const CURRENT_VERSION = "2.15";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
@@ -2268,6 +2378,443 @@ try {
     function initAdminFeatures() {
         updateAdminBadgeVisibility();
         setupAdminTrigger();
+    }
+
+    // -----------------------------------------------------------------
+    // TÍNH NĂNG GOM & SẮP XẾP FILE HÓA ĐƠN TRÊN MOBILE
+    // -----------------------------------------------------------------
+    let mergedRowsMobile = [];
+    let mergedFilesListMobile = [];
+
+    function switchMainTabMobile(tab) {
+        const viewTao = document.getElementById('viewTaoHoadon');
+        const viewGom = document.getElementById('viewGomFile');
+        const btnTao = document.getElementById('btnTabTaoHd');
+        const btnGom = document.getElementById('btnTabGomFile');
+
+        if (tab === 'gomfile') {
+            if (viewTao) viewTao.style.display = 'none';
+            if (viewGom) viewGom.style.display = 'block';
+            if (btnTao) {
+                btnTao.style.background = 'transparent';
+                btnTao.style.color = '#94a3b8';
+                btnTao.style.boxShadow = 'none';
+            }
+            if (btnGom) {
+                btnGom.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+                btnGom.style.color = '#ffffff';
+                btnGom.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
+            }
+        } else {
+            if (viewTao) viewTao.style.display = 'block';
+            if (viewGom) viewGom.style.display = 'none';
+            if (btnTao) {
+                btnTao.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+                btnTao.style.color = '#ffffff';
+                btnTao.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
+            }
+            if (btnGom) {
+                btnGom.style.background = 'transparent';
+                btnGom.style.color = '#94a3b8';
+                btnGom.style.boxShadow = 'none';
+            }
+        }
+    }
+
+    function parseNumberJs(val) {
+        if (val === null || val === undefined) return 0;
+        if (typeof val === 'number') return isNaN(val) ? 0 : val;
+        let s = String(val).trim().replace(/\s+/g, '').replace(/[đ₫VNDvnđ]/gi, '');
+        if (s.includes(',') && s.includes('.')) {
+            if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else {
+                s = s.replace(/,/g, '');
+            }
+        } else if (s.includes(',')) {
+            s = s.replace(/,/g, '');
+        } else if (s.includes('.') && s.split('.').pop().length === 3) {
+            s = s.replace(/\./g, '');
+        }
+        let n = parseFloat(s);
+        return isNaN(n) ? 0 : n;
+    }
+
+    function parseDateTimeJs(val) {
+        if (!val) return null;
+        if (val instanceof Date && !isNaN(val)) return val;
+        let s = String(val).trim();
+        let d = new Date(s);
+        if (!isNaN(d.getTime()) && s.length >= 8 && !s.toLowerCase().includes('tổng') && !s.toLowerCase().includes('quỹ')) {
+            return d;
+        }
+        let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+        if (m) {
+            let day = parseInt(m[1], 10);
+            let month = parseInt(m[2], 10) - 1;
+            let year = parseInt(m[3], 10);
+            let hour = m[4] ? parseInt(m[4], 10) : 0;
+            let min = m[5] ? parseInt(m[5], 10) : 0;
+            let sec = m[6] ? parseInt(m[6], 10) : 0;
+            let dt = new Date(year, month, day, hour, min, sec);
+            if (!isNaN(dt.getTime())) return dt;
+        }
+        return null;
+    }
+
+    function formatDateTimeJs(dt) {
+        if (!dt) return '';
+        let y = dt.getFullYear();
+        let m = String(dt.getMonth() + 1).padStart(2, '0');
+        let d = String(dt.getDate()).padStart(2, '0');
+        let h = String(dt.getHours()).padStart(2, '0');
+        let mi = String(dt.getMinutes()).padStart(2, '0');
+        let s = String(dt.getSeconds()).padStart(2, '0');
+        return `${y}-${m}-${d} ${h}:${mi}:${s}`;
+    }
+
+    async function handleMergeFilesMobile(input) {
+        const files = Array.from(input.files || []);
+        if (files.length === 0) return;
+
+        let allRows = [];
+        let fileNames = [];
+        let errors = [];
+
+        log(`[*] Bắt đầu đọc và gom ${files.length} file...`);
+
+        for (let file of files) {
+            try {
+                const data = await file.arrayBuffer();
+                const wb = XLSX.read(data, {type: 'array', cellDates: true});
+                const firstSheetName = wb.SheetNames[0];
+                const ws = wb.Sheets[firstSheetName];
+                const rawData = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+
+                if (!rawData || rawData.length === 0) {
+                    errors.push(`${file.name}: File rỗng`);
+                    continue;
+                }
+
+                let headerIdx = 0;
+                for (let i = 0; i < Math.min(10, rawData.length); i++) {
+                    const rowStr = rawData[i].map(x => String(x).toLowerCase().trim());
+                    if (rowStr.some(k => k.includes('mã phiếu') || k.includes('mã hóa đơn') || k.includes('mã hđ') || k.includes('thời gian') || k.includes('ngày') || k.includes('giá trị') || k.includes('tổng tiền'))) {
+                        headerIdx = i;
+                        break;
+                    }
+                }
+
+                const headers = rawData[headerIdx].map(x => String(x).toLowerCase().trim());
+                let colCode = -1, colTime = -1, colVal = -1, colType = -1, colMethod = -1, colAcc = -1, colAccNum = -1, colPartner = -1;
+
+                for (let c = 0; c < headers.length; c++) {
+                    const h = headers[c];
+                    if (colCode === -1 && (h.includes('mã phiếu') || h.includes('mã hóa đơn') || h.includes('mã hđ') || h.includes('mã chứng từ') || h.includes('mã gd') || h === 'mã')) colCode = c;
+                    else if (colTime === -1 && (h.includes('thời gian') || h.includes('ngày bán') || h.includes('ngày lập') || h.includes('ngày tạo') || h.includes('ngày'))) colTime = c;
+                    else if (colVal === -1 && (h.includes('giá trị') || h.includes('tổng tiền') || h.includes('khách đã trả') || h.includes('thành tiền') || h.includes('số tiền'))) colVal = c;
+                    else if (colType === -1 && (h.includes('loại thu chi') || h.includes('loại thu') || h.includes('loại'))) colType = c;
+                    else if (colMethod === -1 && (h.includes('phương thức') || h.includes('hình thức'))) colMethod = c;
+                    else if (colAcc === -1 && (h.includes('tên tài khoản') || h.includes('ngân hàng'))) colAcc = c;
+                    else if (colAccNum === -1 && (h.includes('số tài khoản') || h.includes('số tk'))) colAccNum = c;
+                    else if (colPartner === -1 && (h.includes('người nộp') || h.includes('người nhận') || h.includes('khách hàng') || h.includes('đối tác'))) colPartner = c;
+                }
+
+                if (colCode === -1 || colVal === -1) {
+                    errors.push(`${file.name}: Thiếu cột Mã hoặc Giá trị`);
+                    continue;
+                }
+
+                for (let r = headerIdx + 1; r < rawData.length; r++) {
+                    const row = rawData[r];
+                    if (!row || row.length === 0) continue;
+
+                    const rawCode = String(row[colCode] || '').trim();
+                    if (!rawCode) continue;
+
+                    const lowCode = rawCode.toLowerCase();
+                    if (['tổng', 'quỹ', 'tồn', 'cộng', 'số dư', 'nan', 'none'].some(k => lowCode.includes(k))) continue;
+
+                    let rawVal = row[colVal];
+                    let numVal = parseNumberJs(rawVal);
+                    if (numVal <= 0) continue;
+
+                    let rawTime = colTime !== -1 ? row[colTime] : '';
+                    let parsedDt = parseDateTimeJs(rawTime);
+                    if (!parsedDt) continue;
+
+                    allRows.push({
+                        maPhieu: rawCode,
+                        thoiGian: formatDateTimeJs(parsedDt),
+                        parsedDt: parsedDt,
+                        loaiThuChi: colType !== -1 ? String(row[colType] || '').trim() : 'Phiếu thu',
+                        phuongThuc: colMethod !== -1 ? String(row[colMethod] || '').trim() : 'Chuyển khoản',
+                        tenTK: colAcc !== -1 ? String(row[colAcc] || '').trim() : '',
+                        soTK: colAccNum !== -1 ? String(row[colAccNum] || '').trim() : '',
+                        nguoiNopNhan: colPartner !== -1 ? String(row[colPartner] || '').trim() : '',
+                        giaTri: numVal,
+                        fileGoc: file.name
+                    });
+                }
+                fileNames.push(file.name);
+            } catch (err) {
+                errors.push(`${file.name}: ${err.message}`);
+            }
+        }
+
+        if (allRows.length === 0) {
+            alert('Không tìm thấy dữ liệu hóa đơn hợp lệ trong các file đã chọn!' + (errors.length ? '\n' + errors.join('\n') : ''));
+            return;
+        }
+
+        mergedRowsMobile = allRows;
+        mergedFilesListMobile = fileNames;
+        applyGomSortMobile();
+        log(`[✔] Đã gom ${fileNames.length} file ➔ ${allRows.length} phiếu hợp lệ.`);
+    }
+
+    function applyGomSortMobile() {
+        if (!mergedRowsMobile || mergedRowsMobile.length === 0) return;
+
+        let rows = [...mergedRowsMobile];
+        const isDedup = document.getElementById('checkGomDedupMobile')?.checked;
+        if (isDedup) {
+            const seen = new Set();
+            rows = rows.filter(r => {
+                if (seen.has(r.maPhieu)) return false;
+                seen.add(r.maPhieu);
+                return true;
+            });
+        }
+
+        const sortMode = document.getElementById('selectGomSortMobile')?.value || 'asc';
+        rows.sort((a, b) => {
+            let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
+            let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
+            return sortMode === 'asc' ? tA - tB : tB - tA;
+        });
+
+        const kpiFiles = document.getElementById('kpiGomFilesCount');
+        const kpiRows = document.getElementById('kpiGomRowsCount');
+        const kpiMoney = document.getElementById('kpiGomTotalMoney');
+        const kpiTime = document.getElementById('kpiGomTimeRange');
+
+        if (kpiFiles) kpiFiles.textContent = `${mergedFilesListMobile.length} file`;
+        if (kpiRows) kpiRows.textContent = `${rows.length.toLocaleString()} phiếu`;
+
+        let totalSum = rows.reduce((acc, r) => acc + r.giaTri, 0);
+        if (kpiMoney) kpiMoney.textContent = `${totalSum.toLocaleString()} đ`;
+
+        if (kpiTime && rows.length > 0) {
+            let minTime = rows[0].parsedDt;
+            let maxTime = rows[0].parsedDt;
+            rows.forEach(r => {
+                if (r.parsedDt) {
+                    if (!minTime || r.parsedDt < minTime) minTime = r.parsedDt;
+                    if (!maxTime || r.parsedDt > maxTime) maxTime = r.parsedDt;
+                }
+            });
+            if (minTime && maxTime) {
+                let fmt = dt => `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+                kpiTime.textContent = `${fmt(minTime)} ➔ ${fmt(maxTime)}`;
+            } else {
+                kpiTime.textContent = 'Không xác định';
+            }
+        }
+
+        const actionBox = document.getElementById('gomActionBox');
+        const previewBox = document.getElementById('gomPreviewBox');
+        if (actionBox) actionBox.style.display = 'flex';
+        if (previewBox) previewBox.style.display = 'block';
+
+        const badge = document.getElementById('gomPreviewBadge');
+        if (badge) badge.textContent = `${rows.length} phiếu`;
+
+        const tbody = document.getElementById('gomTableBody');
+        if (tbody) {
+            tbody.innerHTML = '';
+            const previewLimit = Math.min(rows.length, 300);
+            for (let i = 0; i < previewLimit; i++) {
+                const r = rows[i];
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid #1e293b';
+                tr.innerHTML = `
+                    <td style="padding:6px; text-align:center; color:#94a3b8;">${i + 1}</td>
+                    <td style="padding:6px; font-weight:700; color:#38bdf8;">${r.maPhieu}</td>
+                    <td style="padding:6px; text-align:center;">${r.thoiGian}</td>
+                    <td style="padding:6px; text-align:right; font-weight:700; color:#4ade80;">${r.giaTri.toLocaleString()} đ</td>
+                    <td style="padding:6px;">${r.nguoiNopNhan || '-'}</td>
+                    <td style="padding:6px; color:#94a3b8; font-size:10px;">${r.fileGoc}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        }
+    }
+
+    function resetGomFilesMobile() {
+        mergedRowsMobile = [];
+        mergedFilesListMobile = [];
+        const input = document.getElementById('fileMergeMobileInput');
+        if (input) input.value = '';
+
+        const kpiFiles = document.getElementById('kpiGomFilesCount');
+        const kpiRows = document.getElementById('kpiGomRowsCount');
+        const kpiMoney = document.getElementById('kpiGomTotalMoney');
+        const kpiTime = document.getElementById('kpiGomTimeRange');
+
+        if (kpiFiles) kpiFiles.textContent = '0 file';
+        if (kpiRows) kpiRows.textContent = '0 phiếu';
+        if (kpiMoney) kpiMoney.textContent = '0 đ';
+        if (kpiTime) kpiTime.textContent = 'Chưa có dữ liệu';
+
+        const actionBox = document.getElementById('gomActionBox');
+        const previewBox = document.getElementById('gomPreviewBox');
+        if (actionBox) actionBox.style.display = 'none';
+        if (previewBox) previewBox.style.display = 'none';
+        log('[*] Đã xóa danh sách file gom.');
+    }
+
+    function createMergedWorkbookMobile() {
+        if (!mergedRowsMobile || mergedRowsMobile.length === 0) return null;
+        let rows = [...mergedRowsMobile];
+        const isDedup = document.getElementById('checkGomDedupMobile')?.checked;
+        if (isDedup) {
+            const seen = new Set();
+            rows = rows.filter(r => {
+                if (seen.has(r.maPhieu)) return false;
+                seen.add(r.maPhieu);
+                return true;
+            });
+        }
+        const sortMode = document.getElementById('selectGomSortMobile')?.value || 'asc';
+        rows.sort((a, b) => {
+            let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
+            let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
+            return sortMode === 'asc' ? tA - tB : tB - tA;
+        });
+
+        const aoa = [
+            ["STT", "Mã phiếu", "Thời gian", "Loại thu chi", "Phương thức", "Tên tài khoản", "Số tài khoản", "Người nộp/nhận", "Giá trị", "File nguồn"]
+        ];
+        let totalSum = 0;
+        rows.forEach((r, idx) => {
+            totalSum += r.giaTri;
+            aoa.push([
+                idx + 1,
+                r.maPhieu,
+                r.thoiGian,
+                r.loaiThuChi,
+                r.phuongThuc,
+                r.tenTK,
+                r.soTK,
+                r.nguoiNopNhan,
+                r.giaTri,
+                r.fileGoc
+            ]);
+        });
+        aoa.push(["TỔNG CỘNG", "", "", "", "", "", "", "", totalSum, ""]);
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!cols'] = [
+            {wch: 6},
+            {wch: 16},
+            {wch: 20},
+            {wch: 18},
+            {wch: 14},
+            {wch: 26},
+            {wch: 12},
+            {wch: 20},
+            {wch: 14},
+            {wch: 20}
+        ];
+        XLSX.utils.book_append_sheet(wb, ws, "HOADON_TONG");
+        return wb;
+    }
+
+    function downloadMergedExcelMobile() {
+        const wb = createMergedWorkbookMobile();
+        if (!wb) {
+            alert('Chưa có dữ liệu để tải về!');
+            return;
+        }
+        const now = new Date();
+        const fn = `GOM_HOADON_TONG_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+        downloadExcelFile(wb, fn);
+        log(`[✔] Đã tải về file tổng: ${fn}`);
+    }
+
+    async function shareMergedExcelMobile() {
+        const wb = createMergedWorkbookMobile();
+        if (!wb) {
+            alert('Chưa có dữ liệu để chia sẻ!');
+            return;
+        }
+        const now = new Date();
+        const fn = `GOM_HOADON_TONG_${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;
+        const wbout = XLSX.write(wb, {bookType: 'xlsx', type: 'array'});
+        const blob = new Blob([wbout], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+
+        if (navigator.canShare && navigator.canShare({files: [new File([blob], fn, {type: blob.type})]})) {
+            try {
+                const file = new File([blob], fn, {type: blob.type});
+                await navigator.share({
+                    title: fn,
+                    text: `File hóa đơn tổng hợp (${mergedRowsMobile.length} phiếu)`,
+                    files: [file]
+                });
+                log(`[✔] Đã mở menu chia sẻ file ${fn}`);
+                return;
+            } catch(e) {
+                if (e.name !== 'AbortError') console.warn("Share API error:", e);
+            }
+        }
+        downloadExcelFile(wb, fn);
+    }
+
+    function useMergedAsKiotMobile() {
+        if (!mergedRowsMobile || mergedRowsMobile.length === 0) {
+            alert('Chưa có dữ liệu để chuyển sang tạo hóa đơn!');
+            return;
+        }
+
+        let rows = [...mergedRowsMobile];
+        const isDedup = document.getElementById('checkGomDedupMobile')?.checked;
+        if (isDedup) {
+            const seen = new Set();
+            rows = rows.filter(r => {
+                if (seen.has(r.maPhieu)) return false;
+                seen.add(r.maPhieu);
+                return true;
+            });
+        }
+        const sortMode = document.getElementById('selectGomSortMobile')?.value || 'asc';
+        rows.sort((a, b) => {
+            let tA = a.parsedDt ? a.parsedDt.getTime() : 0;
+            let tB = b.parsedDt ? b.parsedDt.getTime() : 0;
+            return sortMode === 'asc' ? tA - tB : tB - tA;
+        });
+
+        kiotDataRows = rows.map(r => Math.round(r.giaTri));
+        const totalMoney = kiotDataRows.reduce((a, b) => a + b, 0);
+
+        const nameDisp = document.getElementById("kiotFileName");
+        if (nameDisp) {
+            nameDisp.innerText = `File Tổng Đã Gom (${kiotDataRows.length} HĐ - ${totalMoney.toLocaleString()} đ)`;
+            nameDisp.classList.add("loaded");
+        }
+        const kpiCount = document.getElementById("kpiKiotCount");
+        const kpiTotal = document.getElementById("kpiKiotTotal");
+        if (kpiCount) kpiCount.innerText = kiotDataRows.length.toLocaleString() + " HĐ";
+        if (kpiTotal) kpiTotal.innerText = totalMoney.toLocaleString() + " đ";
+
+        switchMainTabMobile('taohd');
+        log(`[✔] Đã nạp ${kiotDataRows.length} hóa đơn tổng vào hệ thống tạo hóa đơn (Tổng tiền: ${totalMoney.toLocaleString()} đ)`);
+
+        const fileBox = document.getElementById("fileMisaInput");
+        if (fileBox && fileBox.parentElement) {
+            fileBox.parentElement.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
     }
 
     // Khởi chạy kiểm tra bản quyền & hiển thị tên file mặc định
