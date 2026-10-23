@@ -1439,6 +1439,39 @@ try {
         reader.readAsArrayBuffer(file);
     }
 
+    // Thuật toán chia tổng tiền thành nhiều hóa đơn (Chế độ Gom)
+    function chiaTien(tongTien, soLuong) {
+        tongTien = Math.round(tongTien);
+        if (soLuong <= 1 || tongTien <= 0) return [tongTien];
+
+        const phanChia = [];
+        let conLai = tongTien;
+
+        for (let i = 0; i < soLuong - 1; i++) {
+            const partsLeft = soLuong - i;
+            const currAvg = conLai / partsLeft;
+
+            const minP = Math.max(1000, Math.floor(currAvg * 0.6));
+            const maxP = Math.max(minP, Math.floor(currAvg * 1.4));
+
+            let tien = Math.floor(Math.random() * (maxP - minP + 1)) + minP;
+
+            const minReserve = (partsLeft - 1) * 1000;
+            if (conLai - tien < minReserve) {
+                tien = Math.max(1000, conLai - minReserve);
+            }
+            if (tien > conLai) {
+                tien = conLai;
+            }
+
+            phanChia.push(tien);
+            conLai -= tien;
+        }
+
+        phanChia.push(Math.max(0, conLai));
+        return phanChia;
+    }
+
     // Thuật toán chọn số lượng bán lẻ tự nhiên
     function pickRetailSlDg(thanhTien, stockQty, minP = 1000, maxP = 10000000) {
         stockQty = Math.max(1, Math.floor(stockQty));
