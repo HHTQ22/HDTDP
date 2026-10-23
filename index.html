@@ -447,7 +447,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.15)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.17)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -1319,7 +1319,7 @@ try {
                 }
 
                 const headers = rows[headerIdx] || [];
-                let maIdx = -1, tenIdx = -1, dvtIdx = -1, stockIdx = -1, taxIdx = -1;
+                let maIdx = -1, tenIdx = -1, dvtIdx = -1, stockIdx = -1, taxIdx = -1, priceIdx = -1;
 
                 for (let c = 0; c < headers.length; c++) {
                     const cl = removeAccents(headers[c]);
@@ -1327,6 +1327,31 @@ try {
                     if (tenIdx === -1 && (['ten', 'ten hang', 'ten vthh', 'ten sp'].includes(cl) || cl.includes('ten'))) tenIdx = c;
                     if (dvtIdx === -1 && (['dvt', 'don vi tinh', 'don vi tinh chinh'].includes(cl) || cl.includes('don vi'))) dvtIdx = c;
                     if (taxIdx === -1 && (cl.includes('thue') || cl.includes('vat'))) taxIdx = c;
+                }
+
+                // Cột đơn giá bán 1 theo thứ tự ưu tiên (Chỉ lấy ở cột bán, TUYỆT ĐỐI không lấy giá vốn)
+                for (let c = 0; c < headers.length; c++) {
+                    const cl = removeAccents(headers[c]);
+                    if (cl.includes('gia tri') || cl.includes('thanh tien')) continue;
+                    if (['don gia ban 1', 'gia ban 1'].some(k => cl.includes(k))) {
+                        priceIdx = c;
+                        break;
+                    }
+                }
+                if (priceIdx === -1) {
+                    for (let c = 0; c < headers.length; c++) {
+                        const cl = removeAccents(headers[c]);
+                        if (cl.includes('gia tri') || cl.includes('thanh tien')) continue;
+                        if (['don gia ban', 'don gia niem yet', 'gia ban', 'gia niem yet', 'don gia ban le', 'gia ban le'].some(k => cl.includes(k))) {
+                            priceIdx = c;
+                            break;
+                        }
+                    }
+                }
+
+                if (priceIdx === -1) {
+                    alert("Không tìm thấy cột 'Đơn giá bán 1' (hoặc Đơn giá bán) trong file MISA!\nVui lòng kiểm tra lại file tồn kho MISA.");
+                    return;
                 }
 
                 // Cột tồn kho ưu tiên
@@ -1357,8 +1382,9 @@ try {
                 misaStockColIdx = stockIdx;
                 misaStockColName = headers[stockIdx];
 
-                // Gộp các dòng trùng mã hàng
+                // Gộp các dòng trùng mã hàng & chỉ lấy mặt hàng có đơn giá bán 1 > 0
                 const mapItems = {};
+                let skippedEmptyPrice = 0;
                 for (let r = headerIdx + 1; r < rows.length; r++) {
                     const row = rows[r];
                     if (!row || !row[maIdx]) continue;
@@ -1366,6 +1392,13 @@ try {
                     const ten = String(row[tenIdx] || "").trim();
                     const dvt = String(dvtIdx !== -1 ? (row[dvtIdx] || "Cái") : "Cái").trim();
                     const stock = parseMoney(row[stockIdx]);
+                    if (stock <= 0) continue;
+
+                    const price = priceIdx !== -1 ? parseMoney(row[priceIdx]) : 0;
+                    if (!price || price <= 0) {
+                        skippedEmptyPrice++;
+                        continue; // Bỏ qua hoàn toàn mặt hàng trống đơn giá hoặc giá <= 0
+                    }
                     
                     let taxRate = 8;
                     if (taxIdx !== -1 && row[taxIdx] != null) {
@@ -1378,14 +1411,27 @@ try {
                     }
 
                     if (!mapItems[ma]) {
-                        mapItems[ma] = { ma, ten, dvt, stock: 0, taxRate };
+                        mapItems[ma] = { ma, ten, dvt, stock: 0, taxRate, price };
                     }
                     mapItems[ma].stock += stock;
+                    if ((!mapItems[ma].price || mapItems[ma].price <= 0) && price > 0) {
+                        mapItems[ma].price = price;
+                    }
                 }
 
-                misaDataRows = Object.values(mapItems).filter(x => x.stock > 0);
+                misaDataRows = Object.values(mapItems).filter(x => x.stock > 0 && x.price > 0);
                 document.getElementById("kpiMisaStock").innerText = misaDataRows.length.toLocaleString() + " mặt hàng";
-                log(`[✔] MISA: Đã nạp ${misaDataRows.length} mặt hàng còn tồn > 0`);
+                log(`[✔] MISA: Nhận diện thành công cột giá bán '${headers[priceIdx]}' chuẩn từ kho MISA`);
+                log(`[✔] MISA: Đã nạp ${misaDataRows.length} mặt hàng có Đơn giá bán 1 & tồn kho > 0 (Đã bỏ qua ${skippedEmptyPrice} mặt hàng trống giá/giá <= 0)`);
+                if (misaDataRows.length === 0) {
+                    alert("Tất cả mặt hàng trong file MISA đều không có đơn giá bán hoặc hết hàng!\nVui lòng điền 'Đơn giá bán 1' vào file MISA.");
+                    return;
+                }
+                if (taxIdx !== -1) {
+                    log(`[✔] MISA: Tìm thấy cột thuế suất '${headers[taxIdx]}'`);
+                } else {
+                    log(`[!] MISA: Không có cột thuế -> Tạm tính mặc định 8%`);
+                }
             } catch(err) {
                 alert("Lỗi đọc file MISA: " + err.message);
             }
@@ -1426,10 +1472,10 @@ try {
         return { sl: 1, dg: Math.max(minP, Math.min(maxP, thanhTien)) };
     }
 
-    // Thuật toán cân bằng số lượng và đơn giá chính xác
-    function findSlDgExact(ttTarget, maxStock, minP = 1000, maxP = 10000000) {
+    // Thuật toán cân bằng số lượng và đơn giá theo chuẩn đơn giá bán MISA (không áp cơ chế lãi)
+    function findSlDgExact(ttTarget, maxStock, misaP = 0, minP = 1000, maxP = 10000000) {
         maxStock = Math.max(1, Math.floor(maxStock));
-        const limit = Math.min(maxStock, 50);
+        const limit = Math.min(maxStock, 150);
         const candidates = [];
         for (let sl = 1; sl <= limit; sl++) {
             if (ttTarget % sl === 0) {
@@ -1438,6 +1484,11 @@ try {
             }
         }
         if (candidates.length > 0) {
+            if (misaP > 0) {
+                const targetDg = Math.round(misaP);
+                candidates.sort((a, b) => Math.abs(a.dg - targetDg) - Math.abs(b.dg - targetDg));
+                return candidates[0];
+            }
             const retail = candidates.filter(c => c.sl >= 1 && c.sl <= 10);
             if (retail.length > 0) {
                 const fav = retail.filter(c => c.sl >= 2 && c.sl <= 6);
@@ -1459,28 +1510,111 @@ try {
         return { tt, vat, tong: tt + vat };
     }
 
-    function chiaTien(tongTien, soDong) {
-        if (soDong <= 1 || tongTien <= 0) return [tongTien];
-        const res = [];
-        let conLai = tongTien;
-        for (let i = 0; i < soDong - 1; i++) {
-            const partsLeft = soDong - i;
-            const avg = conLai / partsLeft;
-            const minP = Math.max(1000, Math.floor(avg * 0.7));
-            let maxP = Math.max(minP, Math.floor(avg * 1.3));
-            const maxAllowed = Math.floor(conLai - (partsLeft - 1) * 1000);
-            let tien;
-            if (maxAllowed < minP) tien = Math.max(1000, Math.floor(conLai / partsLeft));
-            else {
-                maxP = Math.min(maxP, maxAllowed);
-                tien = Math.floor(Math.random() * (maxP - minP + 1)) + minP;
+    function solveTwoItemsRobust(twoBudget, pPrev, rPrev, stockPrev, pLast, rLast, stockLast) {
+        const targetDgP = pPrev > 0 ? Math.round(pPrev) : 25000;
+        const targetDgL = pLast > 0 ? Math.round(pLast) : 25000;
+
+        const uDongP = targetDgP * (1 + rPrev / 100.0);
+        const uDongL = targetDgL * (1 + rLast / 100.0);
+
+        const maxSlP = Math.min(stockPrev, Math.max(30, Math.round((twoBudget / Math.max(1000.0, uDongP)) * 1.5)));
+        const maxSlL = Math.min(stockLast, Math.max(30, Math.round((twoBudget / Math.max(1000.0, uDongL)) * 1.5)));
+
+        const targetSlP = Math.max(1, Math.min(maxSlP, Math.round((twoBudget / 2) / uDongP)));
+        const targetSlL = Math.max(1, Math.min(maxSlL, Math.round((twoBudget / 2) / uDongL)));
+
+        const slPCands = [];
+        for (let s = 1; s <= maxSlP; s++) slPCands.push(s);
+        slPCands.sort((a, b) => Math.abs(a - targetSlP) - Math.abs(b - targetSlP));
+        const topSlP = slPCands.slice(0, 20);
+
+        const slLCands = [];
+        for (let s = 1; s <= maxSlL; s++) slLCands.push(s);
+        slLCands.sort((a, b) => Math.abs(a - targetSlL) - Math.abs(b - targetSlL));
+        const topSlL = slLCands.slice(0, 20);
+
+        // Pass 1: Bám sát chuẩn 100% đơn giá bán MISA (±5%)
+        // Pass 2: Khung vi chỉnh tối thiểu (±12%, ±20%)
+        for (let deltaPct of [0.05, 0.12, 0.20]) {
+            let minDgP, maxDgP, minDgL, maxDgL;
+            if (pPrev > 0 && pLast > 0) {
+                minDgP = Math.round(pPrev * (1 - deltaPct));
+                maxDgP = Math.round(pPrev * (1 + deltaPct));
+                minDgL = Math.round(pLast * (1 - deltaPct));
+                maxDgL = Math.round(pLast * (1 + deltaPct));
+            } else {
+                minDgP = 1000; maxDgP = 2000000;
+                minDgL = 1000; maxDgL = 2000000;
             }
-            if (tien > conLai) tien = conLai;
-            res.push(tien);
-            conLai -= tien;
+
+            const stepP = Math.max(1, Math.floor((maxDgP - minDgP) / 40));
+            const dgPCands = [];
+            for (let dg = minDgP; dg <= maxDgP; dg += stepP) dgPCands.push(dg);
+            if (!dgPCands.includes(targetDgP)) dgPCands.push(targetDgP);
+            dgPCands.sort((a, b) => Math.abs(a - targetDgP) - Math.abs(b - targetDgP));
+
+            let best = null;
+            let minPen = Infinity;
+
+            for (let slP of topSlP) {
+                for (let dgP of dgPCands) {
+                    const ttP = slP * dgP;
+                    const vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
+                    const dongP = ttP + vatP;
+                    const rem = twoBudget - dongP;
+                    if (rem < 1000) continue;
+
+                    const approxTtL = rLast > 0 ? Math.round(rem / (1 + rLast / 100.0)) : rem;
+                    for (let dt = -5; dt <= 5; dt++) {
+                        const testTtL = approxTtL + dt;
+                        if (testTtL < 1000) continue;
+                        const vatL = rLast > 0 ? Math.round(testTtL * rLast / 100.0) : 0;
+                        if (testTtL + vatL === rem) {
+                            for (let slL of topSlL) {
+                                if (testTtL % slL === 0) {
+                                    const dgL = Math.floor(testTtL / slL);
+                                    if (dgL >= minDgL && dgL <= maxDgL) {
+                                        const pen = Math.abs(dgP - targetDgP)/targetDgP + Math.abs(dgL - targetDgL)/targetDgL;
+                                        if (pen < minPen) {
+                                            minPen = pen;
+                                            best = { slP, dgP, ttP, vatP, dongP, slL, dgL, ttL: testTtL, vatL, dongL: rem };
+                                            if (pen < 0.02) return best;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (best) return best;
         }
-        res.push(Math.max(0, conLai));
-        return res;
+
+        // Pass 3: Cân bằng triệt để 100% về 0đ sai số
+        let slP = targetSlP;
+        let dgP = targetDgP;
+        let ttP = slP * dgP;
+        let vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
+        let dongP = ttP + vatP;
+        let rem = twoBudget - dongP;
+        if (rem < 1000) {
+            slP = 1;
+            ttP = dgP;
+            vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
+            dongP = ttP + vatP;
+            rem = twoBudget - dongP;
+        }
+        const approxTtL = rLast > 0 ? Math.round(rem / (1 + rLast / 100.0)) : rem;
+        for (let dt = -20; dt <= 20; dt++) {
+            const testTtL = approxTtL + dt;
+            const vatL = rLast > 0 ? Math.round(testTtL * rLast / 100.0) : 0;
+            if (testTtL + vatL === rem) {
+                return { slP, dgP, ttP, vatP, dongP, slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
+            }
+        }
+        const testTtL = rem - Math.round(rem * rLast / (100.0 + rLast));
+        const vatL = rem - testTtL;
+        return { slP, dgP, ttP, vatP, dongP, slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
     }
 
     // Bốc hàng hóa cho 1 hóa đơn
@@ -1490,107 +1624,223 @@ try {
         const avail = misaList.filter(x => x.stock > 0);
         if (avail.length === 0) return [];
 
-        let soDong;
-        if (isGom) {
-            const targetN = Math.min(maxDong, avail.length);
-            const minD = targetN >= 5 ? Math.max(5, Math.floor(targetN * 0.85)) : targetN;
-            soDong = Math.floor(Math.random() * (targetN - minD + 1)) + minD;
-        } else {
-            const minD = (maxDong >= 2 && avail.length >= 2) ? 2 : 1;
-            soDong = Math.floor(Math.random() * (Math.min(maxDong, avail.length) - minD + 1)) + minD;
+        function getUnitVat(it) {
+            const p = it.price || 0;
+            const r = it.taxRate || 8;
+            const sellP = p > 0 ? p : 25000;
+            return sellP * (1 + r / 100.0);
         }
-        soDong = Math.min(soDong, avail.length);
 
-        // Bốc ưu tiên theo trọng số tồn kho (Algorithm A-Res): Hàng tồn càng nhiều xác suất được chọn càng cao
-        const weightedItems = avail.map(item => {
+        const weightedAvail = avail.map(item => {
             const u = Math.max(1e-9, Math.random());
             const weight = Math.pow(Math.max(1, item.stock), 1.25);
-            const key = Math.pow(u, 1.0 / weight);
-            return { item, key };
+            return { item, key: Math.pow(u, 1.0 / weight) };
         });
-        weightedItems.sort((a, b) => b.key - a.key);
-        const chosen = weightedItems.slice(0, soDong).map(x => x.item);
-        const parts = chiaTien(tongTien, soDong);
+        weightedAvail.sort((a, b) => b.key - a.key);
+        const shuffled = weightedAvail.map(x => x.item);
+
+        let targetMaxLines = maxDong;
+        if (isGom) {
+            targetMaxLines = Math.min(maxDong, shuffled.length);
+        } else {
+            const maxNatural = Math.max(1, Math.floor(tongTien / 50000));
+            targetMaxLines = Math.min(maxDong, shuffled.length, Math.max(2, maxNatural));
+        }
+
+        const chosen = [];
+        let remBudget = tongTien;
+        for (let it of shuffled) {
+            const uV = getUnitVat(it);
+            if (uV <= remBudget) {
+                chosen.push(it);
+                remBudget -= uV;
+                if (chosen.length >= targetMaxLines) break;
+            }
+        }
+        if (chosen.length === 1 && shuffled.length > 1) {
+            const uV0 = getUnitVat(chosen[0]);
+            for (let it of shuffled) {
+                if (it.ma !== chosen[0].ma && getUnitVat(it) <= (tongTien - uV0)) {
+                    chosen.push(it);
+                    break;
+                }
+            }
+        }
+        if (chosen.length === 0) chosen.push(shuffled[0]);
+
+        // Dành trước ngân sách tối thiểu cho 2 mặt hàng cân bằng cuối cùng
+        const initSls = [];
+        if (chosen.length >= 2) {
+            const minReserve = getUnitVat(chosen[chosen.length - 2]) + getUnitVat(chosen[chosen.length - 1]);
+            const availForLead = Math.max(0, tongTien - minReserve);
+            const leadNeeded = chosen.slice(0, chosen.length - 2).reduce((a, b) => a + getUnitVat(b), 0);
+            const remLead = Math.max(0, availForLead - leadNeeded);
+            const leadWeights = chosen.slice(0, chosen.length - 2).map(() => 0.6 + Math.random() * 0.8);
+            const wSum = leadWeights.reduce((a, b) => a + b, 0) || 1.0;
+
+            for (let idx = 0; idx < chosen.length - 2; idx++) {
+                const pV = getUnitVat(chosen[idx]);
+                const share = remLead > 0 ? remLead * (leadWeights[idx] / wSum) : 0;
+                const extra = Math.max(0, Math.round(share / pV));
+                initSls.push(1 + extra);
+            }
+            initSls.push(1);
+            initSls.push(1);
+        } else {
+            const pV = getUnitVat(chosen[0]);
+            initSls.push(Math.max(1, Math.round(tongTien / pV)));
+        }
 
         const dsHang = [];
         for (let i = 0; i < chosen.length; i++) {
             const item = chosen[i];
-            const tienDong = parts[i];
-            if (tienDong < 1000) continue;
-            const rate = item.taxRate;
-            let thanhTien = rate > 0 ? Math.round(tienDong / (1 + rate / 100.0)) : Math.round(tienDong);
+            const rate = item.taxRate || 8;
+            const pMisa = item.price || 0;
+            const sl = Math.max(1, Math.min(item.stock, initSls[i]));
             
-            const p = pickRetailSlDg(thanhTien, item.stock);
-            if (p.sl <= 0 || p.dg <= 0) continue;
-            thanhTien = p.sl * p.dg;
-            const tienVat = rate > 0 ? Math.round(thanhTien * rate / 100.0) : 0;
-            const tong = thanhTien + tienVat;
+            // Lấy trực tiếp đơn giá bán MISA (không áp cơ chế lãi)
+            const dg = pMisa > 0 ? Math.round(pMisa) : 25000;
+            const tt = sl * dg;
+            const vat = rate > 0 ? Math.round(tt * rate / 100.0) : 0;
+            const tong = tt + vat;
 
-            item.stock -= p.sl;
-            item.daXuat = (item.daXuat || 0) + p.sl;
+            item.stock -= sl;
+            item.daXuat = (item.daXuat || 0) + sl;
 
             dsHang.push({
                 ma: item.ma,
                 ten: item.ten,
                 dvt: item.dvt,
-                sl: p.sl,
-                dg: p.dg,
-                tt: thanhTien,
+                sl: sl,
+                dg: dg,
+                tt: tt,
                 rate: rate,
-                vat: tienVat,
+                vat: vat,
                 tong: tong,
-                origItem: item
+                origItem: item,
+                pMisa: pMisa
             });
         }
 
-        // Bù hàng nếu hụt
-        const sumOut = dsHang.reduce((a, b) => a + b.tong, 0);
-        const diff = tongTien - sumOut;
+        // CÂN BẰNG TOÁN HỌC CHÍNH XÁC 100% VỚI TỔNG TIỀN HÓA ĐƠN (TRIỆT TIÊU HOÀN TOÀN SAI SỐ)
+        if (dsHang.length === 1) {
+            const it = dsHang[0];
+            const r = it.rate;
+            const pMisa1 = it.pMisa || 0;
+            const stockLim = it.origItem.stock + it.sl;
+            const approxTt = r > 0 ? Math.round(tongTien / (1 + r / 100.0)) : tongTien;
+            let matched1 = false;
+            for (let d = -30; d <= 30; d++) {
+                const testTt = approxTt + d;
+                if (testTt < 1000) continue;
+                const cand = findSlDgExact(testTt, stockLim, pMisa1);
+                if (pMisa1 > 0 && Math.abs(cand.dg - pMisa1) / pMisa1 > 0.08) {
+                    continue;
+                }
+                const nRes = calcItemExact(cand.sl, cand.dg, r);
+                if (nRes.tong === tongTien) {
+                    it.origItem.stock += it.sl - cand.sl;
+                    it.origItem.daXuat = (it.origItem.daXuat || 0) + (cand.sl - it.sl);
+                    it.sl = cand.sl; it.dg = cand.dg; it.tt = nRes.tt; it.vat = nRes.vat; it.tong = nRes.tong;
+                    matched1 = true;
+                    break;
+                }
+            }
+            if (!matched1) {
+                const approxMinDong = pMisa1 > 0 ? Math.round(pMisa1 * (1 + r / 100.0)) : 1000;
+                const maxBudgetForBu = tongTien - approxMinDong;
+                const daChon = new Set(dsHang.map(x => x.ma));
+                let conHang = avail.filter(x => !daChon.has(x.ma));
+                if (maxBudgetForBu >= 1000) {
+                    conHang = conHang.filter(x => (x.price > 0 ? x.price * 1.08 <= maxBudgetForBu : true));
+                }
+                if (conHang.length > 0 && maxBudgetForBu >= 1000) {
+                    const buItem = conHang[Math.floor(Math.random() * conHang.length)];
+                    const rBu = buItem.taxRate || 8;
+                    const pBu = buItem.price || 0;
+                    buItem.stock -= 1;
+                    buItem.daXuat = (buItem.daXuat || 0) + 1;
+                    const initDg = pBu > 0 ? Math.round(pBu) : 1000;
+                    const initTt = initDg;
+                    const initVat = rBu > 0 ? Math.round(initTt * rBu / 100.0) : 0;
+                    dsHang.push({
+                        ma: buItem.ma, ten: buItem.ten, dvt: buItem.dvt, sl: 1, dg: initDg,
+                        tt: initTt, rate: rBu, vat: initVat, tong: initTt + initVat,
+                        origItem: buItem, pMisa: pBu
+                    });
+                } else {
+                    let bestD = 0, minDelta = 999999;
+                    for (let d = -30; d <= 30; d++) {
+                        const testTt = approxTt + d;
+                        if (testTt < 1000) continue;
+                        const cand = findSlDgExact(testTt, stockLim, pMisa1);
+                        const nRes = calcItemExact(cand.sl, cand.dg, r);
+                        if (Math.abs(nRes.tong - tongTien) < minDelta) {
+                            minDelta = Math.abs(nRes.tong - tongTien);
+                            bestD = d;
+                        }
+                    }
+                    const cand = findSlDgExact(approxTt + bestD, stockLim, pMisa1);
+                    it.origItem.stock += it.sl - cand.sl;
+                    it.origItem.daXuat = (it.origItem.daXuat || 0) + (cand.sl - it.sl);
+                    it.sl = cand.sl;
+                    it.dg = cand.dg;
+                    it.tt = cand.sl * cand.dg;
+                    it.vat = tongTien - it.tt;
+                    it.tong = tongTien;
+                }
+            }
+        }
 
-        // CÂN BẰNG 2 BIẾN TUYỆT ĐỐI (0 Đ LỆCH)
         if (dsHang.length >= 2) {
             const itPrev = dsHang[dsHang.length - 2];
             const itLast = dsHang[dsHang.length - 1];
-            const baseOther = dsHang.slice(0, dsHang.length - 2).reduce((a, b) => a + b.tong, 0);
-            const twoBudget = tongTien - baseOther;
+            let baseOther = dsHang.slice(0, dsHang.length - 2).reduce((a, b) => a + b.tong, 0);
+            let twoBudget = tongTien - baseOther;
             const rPrev = itPrev.rate;
             const rLast = itLast.rate;
+            const pPrev = itPrev.pMisa || 0;
+            const pLast = itLast.pMisa || 0;
 
-            const targetPrevDong = Math.floor(twoBudget / 2);
-            const approxPrevTt = rPrev > 0 ? Math.max(1000, Math.floor(targetPrevDong / (1 + rPrev / 100.0))) : targetPrevDong;
+            const uMinPrev = Math.round((pPrev > 0 ? pPrev : 1000) * (1 + rPrev / 100.0));
+            const uMinLast = Math.round((pLast > 0 ? pLast : 1000) * (1 + rLast / 100.0));
+            const minNeeded = uMinPrev + uMinLast;
 
-            let found = false;
-            for (let dP = -250; dP <= 250; dP++) {
-                const testPrevTt = approxPrevTt + dP;
-                if (testPrevTt < 1000) continue;
-                const prev = findSlDgExact(testPrevTt, itPrev.origItem.stock + itPrev.sl);
-                const pRes = calcItemExact(prev.sl, prev.dg, rPrev);
-                if (pRes.tt !== testPrevTt) continue;
-
-                const remForLast = twoBudget - pRes.tong;
-                if (remForLast < 1000) continue;
-                const approxLastTt = rLast > 0 ? Math.round(remForLast / (1 + rLast / 100.0)) : remForLast;
-
-                for (let dL = -25; dL <= 25; dL++) {
-                    const testLastTt = approxLastTt + dL;
-                    if (testLastTt < 1000) continue;
-                    const last = findSlDgExact(testLastTt, itLast.origItem.stock + itLast.sl);
-                    const lRes = calcItemExact(last.sl, last.dg, rLast);
-                    if (lRes.tt !== testLastTt) continue;
-
-                    if (pRes.tong + lRes.tong === twoBudget) {
-                        itPrev.origItem.stock += itPrev.sl - prev.sl;
-                        itPrev.origItem.daXuat += prev.sl - itPrev.sl;
-                        itPrev.sl = prev.sl; itPrev.dg = prev.dg; itPrev.tt = pRes.tt; itPrev.vat = pRes.vat; itPrev.tong = pRes.tong;
-
-                        itLast.origItem.stock += itLast.sl - last.sl;
-                        itLast.origItem.daXuat += last.sl - itLast.sl;
-                        itLast.sl = last.sl; itLast.dg = last.dg; itLast.tt = lRes.tt; itLast.vat = lRes.vat; itLast.tong = lRes.tong;
-                        found = true;
+            while (twoBudget < minNeeded && dsHang.length > 2) {
+                let reduced = false;
+                for (let j = dsHang.length - 3; j >= 0; j--) {
+                    if (dsHang[j].sl > 1) {
+                        dsHang[j].sl -= 1;
+                        dsHang[j].origItem.stock += 1;
+                        dsHang[j].origItem.daXuat = (dsHang[j].origItem.daXuat || 0) - 1;
+                        dsHang[j].tt = dsHang[j].sl * dsHang[j].dg;
+                        dsHang[j].vat = dsHang[j].rate > 0 ? Math.round(dsHang[j].tt * dsHang[j].rate / 100.0) : 0;
+                        dsHang[j].tong = dsHang[j].tt + dsHang[j].vat;
+                        reduced = true;
                         break;
                     }
                 }
-                if (found) break;
+                if (!reduced) {
+                    const removed = dsHang.splice(dsHang.length - 3, 1)[0];
+                    removed.origItem.stock += removed.sl;
+                    removed.origItem.daXuat = (removed.origItem.daXuat || 0) - removed.sl;
+                }
+                baseOther = dsHang.slice(0, dsHang.length - 2).reduce((a, b) => a + b.tong, 0);
+                twoBudget = tongTien - baseOther;
+            }
+
+            const stockPrevLim = itPrev.origItem.stock + itPrev.sl;
+            const stockLastLim = itLast.origItem.stock + itLast.sl;
+
+            const sol = solveTwoItemsRobust(twoBudget, pPrev, rPrev, stockPrevLim, pLast, rLast, stockLastLim);
+            if (sol) {
+                itPrev.origItem.stock += itPrev.sl - sol.slP;
+                itPrev.origItem.daXuat = (itPrev.origItem.daXuat || 0) + (sol.slP - itPrev.sl);
+                itPrev.sl = sol.slP; itPrev.dg = sol.dgP; itPrev.tt = sol.ttP; itPrev.vat = sol.vatP; itPrev.tong = sol.dongP;
+
+                itLast.origItem.stock += itLast.sl - sol.slL;
+                itLast.origItem.daXuat = (itLast.origItem.daXuat || 0) + (sol.slL - itLast.sl);
+                itLast.sl = sol.slL; itLast.dg = sol.dgL; itLast.tt = sol.ttL; itLast.vat = sol.vatL; itLast.tong = sol.dongL;
             }
         }
 
@@ -2099,7 +2349,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.15";
+    const CURRENT_VERSION = "2.17";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());

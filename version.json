@@ -1,6 +1,6 @@
 {
-  "version": "2.15",
-  "release_date": "22/10/2026",
-  "changelog": "- TÍNH NĂNG MỚI: Thêm TAB Gom File Hóa Đơn trên cả PC và Mobile (Gom nhiều file Excel/CSV thành 1 file tổng duy nhất)\n- Tự động lọc sạch các dòng chân trang: Quỹ đầu kỳ, Tổng thu, Tổng chi, Tồn quỹ\n- Tự động sắp xếp chuẩn xác theo trình tự thời gian trong ngày (từ sáng đến tối)\n- Nút 1-Click: Dùng File Này Để Tạo HĐ Thuế nạp thẳng vào quy trình KiotViet\n- Tối ưu hóa kịch bản đóng gói PyInstaller & nén tar siêu tốc",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.15/PM_HoaDon.zip"
+  "version": "2.17",
+  "release_date": "23/10/2026",
+  "changelog": "- TÍNH NĂNG MỚI: Chỉ lấy đơn giá bán ra từ cột 'Đơn giá bán 1' (hoặc Đơn giá bán) chuẩn từ kho MISA, tuyệt đối không lấy giá vốn hay giá mua.\n- Lọc sạch 100% mặt hàng trống giá: Tự động phát hiện và bỏ qua các mặt hàng không có đơn giá hoặc đơn giá <= 0.\n- Bảng xem trước & bộ đếm KPI: Hiển thị minh bạch số lượng mặt hàng có giá bán hợp lệ sẵn sàng xuất hóa đơn.\n- Triệt tiêu 100% sai số: Cân bằng toán học chính xác từng đồng 0đ khớp hoàn toàn với hóa đơn KiotViet gốc.\n- Đồng bộ toàn diện 100% tính năng giữa bản PC và Mobile.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.17/PM_HoaDon.zip"
 }
