@@ -1623,31 +1623,64 @@ try {
             if (best) return best;
         }
 
-        // Pass 3: Cân bằng triệt để 100% về 0đ sai số
-        let slP = targetSlP;
-        let dgP = targetDgP;
-        let ttP = slP * dgP;
-        let vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
-        let dongP = ttP + vatP;
-        let rem = twoBudget - dongP;
-        if (rem < 1000) {
-            slP = 1;
-            ttP = dgP;
-            vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
-            dongP = ttP + vatP;
-            rem = twoBudget - dongP;
-        }
-        const approxTtL = rLast > 0 ? Math.round(rem / (1 + rLast / 100.0)) : rem;
-        for (let dt = -20; dt <= 20; dt++) {
-            const testTtL = approxTtL + dt;
-            const vatL = rLast > 0 ? Math.round(testTtL * rLast / 100.0) : 0;
-            if (testTtL + vatL === rem) {
-                return { slP, dgP, ttP, vatP, dongP, slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
+        // Pass 3: Cân bằng triệt để 100% chuẩn xác nghiệp vụ thuế (Thuế = round(Thành tiền * r / 100))
+        // Quét kết hợp số lượng và vi chỉnh đơn giá một vài đồng để rem luôn khớp 100% không lệch 1đ thuế
+        const slCandidates = [targetSlP];
+        if (targetSlP > 1) slCandidates.push(targetSlP - 1);
+        if (targetSlP < maxSlP) slCandidates.push(targetSlP + 1);
+        if (!slCandidates.includes(1)) slCandidates.push(1);
+
+        let bestP3 = null;
+        let minPenP3 = Infinity;
+
+        for (let sP of slCandidates) {
+            for (let delta = 0; delta < 30; delta++) {
+                const signs = delta === 0 ? [0] : [1, -1];
+                for (let sign of signs) {
+                    const dgP = targetDgP + sign * delta;
+                    if (dgP < 1000) continue;
+                    const ttP = sP * dgP;
+                    const vatP = rPrev > 0 ? Math.round(ttP * rPrev / 100.0) : 0;
+                    const dongP = ttP + vatP;
+                    const rem = twoBudget - dongP;
+                    if (rem < 1000) continue;
+
+                    const approxTtL = rLast > 0 ? Math.round(rem / (1 + rLast / 100.0)) : rem;
+                    for (let dt = -5; dt <= 5; dt++) {
+                        const testTtL = approxTtL + dt;
+                        if (testTtL < 1000) continue;
+                        const vatL = rLast > 0 ? Math.round(testTtL * rLast / 100.0) : 0;
+                        if (testTtL + vatL === rem) {
+                            for (let slL of topSlL) {
+                                if (testTtL % slL === 0) {
+                                    const dgL = Math.floor(testTtL / slL);
+                                    const pen = Math.abs(dgP - targetDgP)/targetDgP + Math.abs(dgL - targetDgL)/targetDgL;
+                                    if (pen < minPenP3) {
+                                        minPenP3 = pen;
+                                        bestP3 = { slP: sP, dgP, ttP, vatP, dongP, slL, dgL, ttL: testTtL, vatL, dongL: rem };
+                                        if (delta <= 2) return bestP3;
+                                    }
+                                }
+                            }
+                            const pen = Math.abs(dgP - targetDgP)/targetDgP + Math.abs(testTtL - targetDgL)/targetDgL;
+                            if (pen < minPenP3) {
+                                minPenP3 = pen;
+                                bestP3 = { slP: sP, dgP, ttP, vatP, dongP, slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
+                                if (delta <= 2) return bestP3;
+                            }
+                        }
+                    }
+                }
+                if (bestP3 && delta > 3) return bestP3;
             }
+            if (bestP3) return bestP3;
         }
+
+        if (bestP3) return bestP3;
+
         const testTtL = rem - Math.round(rem * rLast / (100.0 + rLast));
         const vatL = rem - testTtL;
-        return { slP, dgP, ttP, vatP, dongP, slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
+        return { slP: targetSlP, dgP: targetDgP, ttP: targetSlP * targetDgP, vatP: Math.round(targetSlP * targetDgP * rPrev / 100.0), dongP: targetSlP * targetDgP + Math.round(targetSlP * targetDgP * rPrev / 100.0), slL: 1, dgL: testTtL, ttL: testTtL, vatL, dongL: rem };
     }
 
     // Bốc hàng hóa cho 1 hóa đơn
@@ -1926,7 +1959,7 @@ try {
             const misaCopy = misaDataRows.map(x => ({ ...x, origStock: x.stock, daXuat: 0 }));
 
             const rowsHoadon = [
-                ['STT HĐ', 'Ngày', 'Tên đơn vị mua hàng', 'Địa chỉ', 'Mã số thuế', 'Người mua hàng', 'Email', 'Hình thức', 'Mã hàng', 'Tên hàng', 'Đơn vị tính', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Thuế suất', 'Tiền thuế GTGT', 'Tiền thuế sau VAT']
+                ['STT HĐ', 'Ngày', 'Tên đơn vị mua hàng', 'Địa chỉ', 'Mã số thuế', 'Người mua hàng', 'Email', 'Hình thức', 'Mã hàng', 'Tên hàng', 'Đơn vị tính', 'Số lượng', 'Đơn giá', 'Thành tiền', 'Thuế suất', 'Tiền thuế GTGT', 'Tổng tiền thanh toán sau VAT']
             ];
 
             let sttHd = 1;
