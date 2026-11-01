@@ -170,6 +170,24 @@
             color: #38bdf8;
             border-color: #0284c7;
         }
+        .file-row {
+            transition: all 0.2s ease;
+            border: 2px dashed transparent;
+            border-radius: 14px;
+            padding: 4px;
+        }
+        .file-row.drag-over {
+            border-color: #38bdf8 !important;
+            background: rgba(56, 189, 248, 0.15) !important;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+            transform: scale(1.015);
+        }
+        .btn-run.drag-over {
+            border: 2px dashed #4ade80 !important;
+            background: rgba(34, 197, 94, 0.25) !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+            transform: scale(1.02);
+        }
         /* Options Grid */
         .opt-grid {
             display: grid;
@@ -466,12 +484,15 @@
     </div>
 
     <!-- Main Tab Navigation -->
-    <div style="display:flex; gap:8px; margin-bottom:14px; background:#1e293b; padding:4px; border-radius:14px; border:1px solid #334155;">
-        <button id="btnTabTaoHd" type="button" onclick="switchMainTabMobile('taohd')" style="flex:1; padding:10px 6px; font-size:12px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; box-shadow:0 2px 8px rgba(2,132,199,0.4); transition:all 0.2s;">
-            ⚡ TẠO HÓA ĐƠN THUẾ
+    <div style="display:flex; gap:6px; margin-bottom:14px; background:#1e293b; padding:4px; border-radius:14px; border:1px solid #334155;">
+        <button id="btnTabTaoHd" type="button" onclick="switchMainTabMobile('taohd')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; box-shadow:0 2px 8px rgba(2,132,199,0.4); transition:all 0.2s;">
+            ⚡ TẠO HÓA ĐƠN
         </button>
-        <button id="btnTabGomFile" type="button" onclick="switchMainTabMobile('gomfile')" style="flex:1; padding:10px 6px; font-size:12px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
-            📑 GOM FILE HÓA ĐƠN
+        <button id="btnTabLocKho" type="button" onclick="switchMainTabMobile('lockho')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+            🔍 LỌC KHO MISA
+        </button>
+        <button id="btnTabGomFile" type="button" onclick="switchMainTabMobile('gomfile')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+            📑 GOM FILE HĐ
         </button>
     </div>
 
@@ -504,15 +525,15 @@
         </div>
         
         <!-- File Kiot -->
-        <div class="file-row">
-            <label class="file-label">1. File Hóa đơn bán hàng KiotViet:</label>
+        <div class="file-row" id="kiotDropZone">
+            <label class="file-label">1. File Hóa đơn bán hàng KiotViet (Kéo & thả file vào đây):</label>
             <div class="file-input-wrapper">
                 <label class="btn-file">
                     📂 Chọn Kiot
                     <input type="file" id="fileKiotInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleKiotFile(this)">
                 </label>
                 <button type="button" onclick="switchMainTabMobile('gomfile')" style="white-space:nowrap; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; color:#38bdf8; border-radius:10px; padding:8px 12px; font-size:12px; font-weight:700; cursor:pointer;" title="Gom nhiều file hóa đơn thành 1 file">📑 Gom file</button>
-                <div id="kiotFileName" class="file-name-display">Chưa chọn file Kiot...</div>
+                <div id="kiotFileName" class="file-name-display">Chưa chọn hoặc kéo thả file Kiot...</div>
             </div>
             <!-- Khung chọn cột số tiền Kiot (tự động nhận diện + cho phép đổi cột linh hoạt) -->
             <div id="kiotColSelectorBox" style="display:none; margin-top:8px; font-size:12px; background:rgba(30,41,59,0.9); border:1px solid #38bdf8; border-radius:10px; padding:8px 12px;">
@@ -526,14 +547,15 @@
         </div>
 
         <!-- File Misa -->
-        <div class="file-row">
-            <label class="file-label">2. File Tồn kho tổng hợp MISA:</label>
+        <div class="file-row" id="misaDropZone">
+            <label class="file-label">2. File Tồn kho tổng hợp MISA (Kéo & thả file vào đây):</label>
             <div class="file-input-wrapper">
                 <label class="btn-file">
                     📂 Chọn Misa
                     <input type="file" id="fileMisaInput" accept=".xlsx,.xls" style="display:none" onchange="handleMisaFile(this)">
                 </label>
-                <div id="misaFileName" class="file-name-display">Chưa chọn file Misa...</div>
+                <button type="button" onclick="switchMainTabMobile('lockho')" style="white-space:nowrap; background:rgba(56,189,248,0.15); border:1px solid #38bdf8; color:#38bdf8; border-radius:10px; padding:8px 12px; font-size:12px; font-weight:700; cursor:pointer;" title="Lọc & làm sạch file tồn kho MISA">🔍 Lọc Kho MISA</button>
+                <div id="misaFileName" class="file-name-display">Chưa chọn hoặc kéo thả file Misa...</div>
             </div>
         </div>
 
@@ -709,6 +731,144 @@
     <!-- END VIEW 1: TẠO HÓA ĐƠN THUẾ -->
 
     <!-- VIEW 2: GOM FILE HÓA ĐƠN -->
+        <!-- TAB 2: LỌC & LÀM SẠCH FILE TỒN KHO MISA -->
+    <div id="viewLocKho" style="display:none;">
+        <div class="section-box" style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <div class="section-title" style="margin-bottom:0;">🔍 Lọc &amp; Làm Sạch Tồn Kho MISA</div>
+                <button type="button" onclick="resetLocKhoMobile()" style="background:#334155; color:#cbd5e1; border:1px solid #475569; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">🧹 Làm Mới</button>
+            </div>
+            <p style="font-size:11px; color:#94a3b8; line-height:1.5; margin-bottom:12px;">
+                Sử dụng file tồn kho của MISA: Tự động xóa bỏ hoàn toàn các file/dòng không hợp lệ (<b>dòng trống thiếu Mã-Tên</b>, <b>không có tồn = 0</b>, <b>tồn bị âm &lt; 0</b>, <b>không có giá bán</b>) để lấy danh sách hàng MISA chuẩn xác.
+            </p>
+
+            <!-- Dropzone chọn file tồn kho MISA -->
+            <input type="file" id="fileLocKhoMobileInput" accept=".xlsx,.xls,.csv" multiple style="display:none;" onchange="handleLocKhoFileMobile(this)">
+            <label for="fileLocKhoMobileInput" id="locKhoDropZone" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:12px; padding:14px; border:2px dashed #38bdf8;">
+                <span style="font-size:14px; font-weight:800;">📂 CHỌN HOẶC KÉO THẢ FILE TỒN KHO MISA</span>
+                <span id="locKhoFileNameBadge" style="font-size:11px; opacity:0.85; font-weight:normal;">(Hỗ trợ 1 hoặc nhiều file MISA .xlsx, .xls, .csv)</span>
+            </label>
+
+            <!-- Khung ánh xạ cột MISA thông minh -->
+            <div id="locKhoColMapBox" style="display:none; background:rgba(0,0,0,0.25); border-radius:12px; padding:10px 12px; border:1px solid #334155; margin-bottom:12px;">
+                <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px;">⚙️ Nhận Diện Cột Chuẩn MISA &amp; Quy Tắc Xóa Dòng Lỗi:</div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Mã Hàng MISA:</label>
+                        <select id="selectLocKhoMa" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Tên Hàng Hóa:</label>
+                        <select id="selectLocKhoTen" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Số Lượng Tồn:</label>
+                        <select id="selectLocKhoTon" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Đơn Giá Bán 1:</label>
+                        <select id="selectLocKhoGia" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Cột ĐVT:</label>
+                        <select id="selectLocKhoDvt" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8;">Thuế VAT Mặc Định:</label>
+                        <select id="selectLocKhoThue" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()">
+                            <option value="8">8%</option>
+                            <option value="10">10%</option>
+                            <option value="5">5%</option>
+                            <option value="0">0%</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Quy tắc tự động xóa bỏ dòng lỗi -->
+                <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:8px 10px; font-size:11px; font-weight:600; color:#38bdf8; display:flex; flex-direction:column; gap:5px;">
+                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:5px;">
+                        <span>🗑️ Tự động xóa bỏ:</span>
+                        <span style="color:#f8fafc;">✖ Trống Mã/Tên</span> •
+                        <span style="color:#fbbf24;">✖ Không có tồn (=0)</span> •
+                        <span style="color:#f87171;">✖ Tồn bị âm (&lt;0)</span> •
+                        <span style="color:#fb7185;">✖ Không có giá bán</span>
+                    </div>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:normal; color:#cbd5e1; margin-top:2px;">
+                        <input type="checkbox" id="chkLocKhoGroup" checked onchange="applyLocKhoFilterMobile()"> Tự động gộp mã hàng trùng (Cộng dồn tồn kho hợp lệ)
+                    </label>
+                </div>
+            </div>
+
+            <!-- 6 KPI Mini Cards thống kê chi tiết dòng giữ lại & dòng bị xóa -->
+            <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;">
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">📦 Tổng Dòng File MISA</div>
+                    <div id="kpiLocKhoTong" class="kpi-val" style="color:#60cdff; font-size:14px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">✅ Hợp Lệ Giữ Lại</div>
+                    <div id="kpiLocKhoKhaDung" class="kpi-val" style="color:#4ade80; font-size:14px;">0 SP</div>
+                </div>
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">🗑️ Xóa: Trống Mã/Tên</div>
+                    <div id="kpiLocKhoXoaTrong" class="kpi-val" style="color:#94a3b8; font-size:13px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">⚠️ Xóa: Không Tồn (=0)</div>
+                    <div id="kpiLocKhoXoaKhongTon" class="kpi-val" style="color:#fbbf24; font-size:13px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">❌ Xóa: Tồn Bị Âm (&lt;0)</div>
+                    <div id="kpiLocKhoXoaTonAm" class="kpi-val" style="color:#f87171; font-size:13px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:9px 8px;">
+                    <div class="kpi-title">🚫 Xóa: Không Giá Bán</div>
+                    <div id="kpiLocKhoXoaKhongGia" class="kpi-val" style="color:#fb7185; font-size:13px;">0 dòng</div>
+                </div>
+            </div>
+
+            <!-- Nút Hành Động 1-Click: Dùng file MISA đã lọc -->
+            <div id="locKhoActionBox" style="display:none; flex-direction:column; gap:8px; margin-bottom:12px;">
+                <button type="button" class="btn-run" style="background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 15px rgba(16,185,129,0.4);" onclick="useFilteredAsMisaMobile()">
+                    🚀 DÙNG FILE MISA ĐÃ LỌC TẠO HÓA ĐƠN
+                </button>
+                <button type="button" class="btn-download btn-download-hoadon" onclick="downloadCleanKhoExcelMobile()">
+                    💾 Tải Về File Tồn Kho MISA Đã Lọc (.xlsx)
+                </button>
+            </div>
+
+            <!-- Chế độ xem & Tìm kiếm nhanh -->
+            <div id="locKhoSearchBox" style="display:none; margin-bottom:8px;">
+                <div style="display:flex; gap:6px; margin-bottom:6px;">
+                    <select id="selectLocKhoViewMode" class="input-ctrl" style="flex:1; font-size:11px; padding:7px 8px;" onchange="renderLocKhoTableMobile(document.getElementById('inputSearchLocKho').value)">
+                        <option value="VALID">✅ Xem Hàng MISA Hợp Lệ Giữ Lại</option>
+                        <option value="ALL_REJECTED">🗑️ Xem Tất Cả Dòng Lỗi Đã Xóa Bỏ</option>
+                        <option value="TRONG">🗑️ Đã xóa: Dòng trống / Thiếu Mã-Tên</option>
+                        <option value="KHONG_TON">⚠️ Đã xóa: Không có tồn (= 0)</option>
+                        <option value="TON_AM">❌ Đã xóa: Tồn bị âm (&lt; 0)</option>
+                        <option value="KHONG_GIA">🚫 Đã xóa: Không có giá bán</option>
+                    </select>
+                </div>
+                <input type="text" id="inputSearchLocKho" class="input-ctrl" placeholder="🔍 Gõ tìm nhanh mã hoặc tên hàng MISA..." style="width:100%; font-size:12px; padding:8px 10px;" oninput="renderLocKhoTableMobile(this.value)">
+            </div>
+
+            <!-- Bảng Xem Trước Chi Tiết -->
+            <div id="locKhoTableBox" style="display:none; max-height:270px; overflow-y:auto; border:1px solid #334155; border-radius:10px; background:#0f172a;">
+                <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">
+                    <thead>
+                        <tr style="background:#1e293b; color:#38bdf8; position:sticky; top:0;">
+                            <th style="padding:6px 8px; border-bottom:1px solid #334155;">Mã MISA</th>
+                            <th style="padding:6px 8px; border-bottom:1px solid #334155;">Tên hàng</th>
+                            <th style="padding:6px 8px; border-bottom:1px solid #334155; text-align:right;">Tồn</th>
+                            <th id="thLocKhoLastCol" style="padding:6px 8px; border-bottom:1px solid #334155; text-align:right;">Giá bán 1</th>
+                        </tr>
+                    </thead>
+                    <tbody id="locKhoTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div id="viewGomFile" style="display:none;">
         <div class="section-box" style="margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -719,10 +879,11 @@
                 Hỗ trợ chọn cùng lúc nhiều file Kiot / Sổ quỹ (.xlsx, .xls, .csv). Hệ thống tự động bóc tách dữ liệu, lọc bỏ dòng quỹ/tổng và sắp xếp theo trình tự thời gian chuẩn xác.
             </p>
 
-            <!-- Nút chọn nhiều file -->
+            <!-- Nút chọn nhiều file (Hỗ trợ kéo thả) -->
             <input type="file" id="fileMergeMobileInput" multiple accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleMergeFilesMobile(this)">
-            <label for="fileMergeMobileInput" class="btn-run" style="cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:12px;">
-                <span>📂 CHỌN CÁC FILE HÓA ĐƠN CẦN GOM...</span>
+            <label for="fileMergeMobileInput" id="gomDropZone" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:12px; padding:14px; border:2px dashed #38bdf8;">
+                <span style="font-size:14px; font-weight:800;">📂 BẤM ĐỂ CHỌN HOẶC KÉO THẢ CÁC FILE VÀO ĐÂY</span>
+                <span style="font-size:11px; opacity:0.85; font-weight:normal;">(Hỗ trợ kéo thả cùng lúc nhiều file Excel/CSV)</span>
             </label>
 
             <!-- Tùy chọn sắp xếp & Lọc trùng -->
@@ -1132,9 +1293,14 @@ try {
         log(`[✔] Kiot: Nhận diện ${kiotDataRows.length} HĐ (Cột: '${colName}') | Tổng: ${total.toLocaleString()} đ`);
     }
 
-    // Đọc File Kiot siêu thông minh & tự động nhận diện mọi loại xuất từ KiotViet
-    function handleKiotFile(input) {
-        const file = input.files[0];
+    // Đọc File Kiot siêu thông minh & tự động nhận diện mọi loại xuất từ KiotViet (Hỗ trợ cả kéo thả)
+    function handleKiotFile(inputOrFile) {
+        let file = null;
+        if (inputOrFile instanceof File) {
+            file = inputOrFile;
+        } else if (inputOrFile && inputOrFile.files && inputOrFile.files[0]) {
+            file = inputOrFile.files[0];
+        }
         if (!file) return;
         document.getElementById("kiotFileName").innerText = file.name;
         document.getElementById("kiotFileName").classList.add("loaded");
@@ -1276,9 +1442,14 @@ try {
         reader.readAsArrayBuffer(file);
     }
 
-    // Đọc File MISA
-    function handleMisaFile(input) {
-        const file = input.files[0];
+    // Đọc File MISA (Hỗ trợ cả kéo thả)
+    function handleMisaFile(inputOrFile) {
+        let file = null;
+        if (inputOrFile instanceof File) {
+            file = inputOrFile;
+        } else if (inputOrFile && inputOrFile.files && inputOrFile.files[0]) {
+            file = inputOrFile.files[0];
+        }
         if (!file) return;
         document.getElementById("misaFileName").innerText = file.name;
         document.getElementById("misaFileName").classList.add("loaded");
@@ -1431,6 +1602,9 @@ try {
                     log(`[✔] MISA: Tìm thấy cột thuế suất '${headers[taxIdx]}'`);
                 } else {
                     log(`[!] MISA: Không có cột thuế -> Tạm tính mặc định 8%`);
+                }
+                if (!window._syncingMisaMobile && typeof handleLocKhoFileMobile === 'function') {
+                    handleLocKhoFileMobile(file, true);
                 }
             } catch(err) {
                 alert("Lỗi đọc file MISA: " + err.message);
@@ -2745,6 +2919,516 @@ try {
         setupAdminTrigger();
     }
 
+
+    // -----------------------------------------------------------------
+    // TÍNH NĂNG LỌC & LÀM SẠCH FILE TỒN KHO MISA TRÊN MOBILE
+    // -----------------------------------------------------------------
+    let rawLocKhoRowsMobile = [];
+    let locKhoHeadersMobile = [];
+    let filteredLocKhoRowsMobile = [];
+    let rejectedLocKhoRowsMobile = [];
+    let locKhoFileNameMobile = "";
+
+    function parseSignedNumberMobile(val) {
+        if (val === null || val === undefined) return null;
+        if (typeof val === 'number') return isNaN(val) ? null : val;
+        let s = String(val).trim();
+        if (!s || ['nan', 'none', 'null', '-', '--'].includes(s.toLowerCase())) return null;
+        let isNeg = false;
+        if ((s.startsWith('(') && s.endsWith(')')) || s.startsWith('-') || s.startsWith('−') || s.startsWith('–')) {
+            isNeg = true;
+        }
+        s = s.replace(/[()\-−–]/g, '').replace(/[^\d.,]/g, '').trim();
+        if (!s) return null;
+        if ((s.match(/\./g) || []).length > 1 && !s.includes(',')) {
+            s = s.replace(/\./g, '');
+        } else if ((s.match(/,/g) || []).length > 1 && !s.includes('.')) {
+            s = s.replace(/,/g, '');
+        } else if (s.includes('.') && s.includes(',')) {
+            if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+                s = s.replace(/\./g, '').replace(',', '.');
+            } else {
+                s = s.replace(/,/g, '');
+            }
+        } else if (s.includes(',')) {
+            const parts = s.split(',');
+            if (parts[1] && parts[1].length === 3) {
+                s = s.replace(',', '');
+            } else {
+                s = s.replace(',', '.');
+            }
+        } else if (s.includes('.')) {
+            const parts = s.split('.');
+            if (parts[1] && parts[1].length === 3) {
+                s = s.replace('.', '');
+            }
+        }
+        const num = parseFloat(s);
+        if (isNaN(num)) return null;
+        return isNeg ? -Math.abs(num) : num;
+    }
+
+    async function handleLocKhoFileMobile(inputOrFiles, silent = false) {
+        let files = [];
+        if (inputOrFiles instanceof File) {
+            files = [inputOrFiles];
+        } else if (inputOrFiles instanceof FileList || Array.isArray(inputOrFiles)) {
+            files = Array.from(inputOrFiles);
+        } else if (inputOrFiles && inputOrFiles.files && inputOrFiles.files.length > 0) {
+            files = Array.from(inputOrFiles.files);
+        }
+        if (!files || files.length === 0) return;
+
+        let combinedRows = [];
+        let firstHeaders = null;
+        let validFileNames = [];
+        let invalidFileNames = [];
+
+        for (let file of files) {
+            try {
+                if (file.size === 0) {
+                    invalidFileNames.push(`${file.name} (File trống 0 byte)`);
+                    continue;
+                }
+                const arrayBuf = await file.arrayBuffer();
+                const data = new Uint8Array(arrayBuf);
+                const workbook = XLSX.read(data, {type: 'array'});
+                let foundRows = null;
+                for (let sName of workbook.SheetNames) {
+                    const sheet = workbook.Sheets[sName];
+                    if (!sheet || !sheet['!ref']) continue;
+                    const r = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                    if (r && r.length > 1) {
+                        foundRows = r;
+                        break;
+                    }
+                }
+                if (!foundRows || foundRows.length === 0) {
+                    invalidFileNames.push(`${file.name} (Không có dữ liệu)`);
+                    continue;
+                }
+
+                // Dò dòng tiêu đề chuẩn MISA (có ít nhất 3 cột không rỗng)
+                let headerIdx = 0;
+                for (let i = 0; i < Math.min(25, foundRows.length); i++) {
+                    const nonEmpty = (foundRows[i] || []).filter(x => x !== null && x !== undefined && String(x).trim() !== '');
+                    const rowStr = nonEmpty.map(x => removeAccents(String(x)));
+                    if (nonEmpty.length >= 3 && rowStr.some(x => x.includes('ma') || x.includes('ten'))) {
+                        headerIdx = i;
+                        break;
+                    }
+                }
+
+                const headers = (foundRows[headerIdx] || []).map(x => String(x || '').trim());
+                const dataRows = foundRows.slice(headerIdx + 1).filter(r => r && r.some(c => c !== null && c !== undefined && String(c).trim() !== ''));
+
+                if (dataRows.length === 0) {
+                    invalidFileNames.push(`${file.name} (Bảng trống không có mặt hàng)`);
+                    continue;
+                }
+
+                if (!firstHeaders) {
+                    firstHeaders = headers;
+                }
+                combinedRows = combinedRows.concat(dataRows);
+                validFileNames.push(file.name);
+            } catch (err) {
+                invalidFileNames.push(`${file.name} (Lỗi đọc file)`);
+            }
+        }
+
+        if (invalidFileNames.length > 0) {
+            invalidFileNames.forEach(inv => log(`[!] Tab Lọc Kho MISA - Đã xóa bỏ file không hợp lệ: ${inv}`));
+            if (!silent && validFileNames.length === 0) {
+                alert("Đã loại bỏ các file không hợp lệ (file trống / lỗi / không đúng chuẩn MISA):\n\n• " + invalidFileNames.join("\n• "));
+            }
+        }
+
+        if (validFileNames.length === 0 || !firstHeaders) return;
+
+        locKhoFileNameMobile = validFileNames.length === 1 ? validFileNames[0] : `${validFileNames.length} file MISA`;
+        let badgeTxt = "✔ " + locKhoFileNameMobile;
+        if (invalidFileNames.length > 0) {
+            badgeTxt += ` (Đã xóa ${invalidFileNames.length} file lỗi)`;
+        }
+        document.getElementById("locKhoFileNameBadge").innerText = badgeTxt;
+
+        locKhoHeadersMobile = firstHeaders;
+        rawLocKhoRowsMobile = combinedRows;
+
+        populateLocKhoSelectors();
+        detectLocKhoColumnsMobile();
+        applyLocKhoFilterMobile();
+
+        document.getElementById("locKhoColMapBox").style.display = "block";
+        document.getElementById("locKhoActionBox").style.display = "flex";
+        document.getElementById("locKhoSearchBox").style.display = "block";
+        document.getElementById("locKhoTableBox").style.display = "block";
+    }
+
+    function populateLocKhoSelectors() {
+        const selects = ['selectLocKhoMa', 'selectLocKhoTen', 'selectLocKhoTon', 'selectLocKhoGia', 'selectLocKhoDvt'];
+        selects.forEach(id => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            sel.innerHTML = '<option value="-1">-- Không chọn --</option>';
+            locKhoHeadersMobile.forEach((h, idx) => {
+                if (h) {
+                    sel.innerHTML += `<option value="${idx}">${h}</option>`;
+                }
+            });
+        });
+    }
+
+    function detectLocKhoColumnsMobile() {
+        let maIdx = -1, tenIdx = -1, tonIdx = -1, giaIdx = -1, dvtIdx = -1;
+        locKhoHeadersMobile.forEach((h, idx) => {
+            const nh = removeAccents(h);
+            if (maIdx === -1 && (nh === 'ma' || nh === 'ma hang' || nh === 'ma vthh' || nh === 'ma sp' || nh === 'sku')) maIdx = idx;
+            if (tenIdx === -1 && (nh === 'ten' || nh === 'ten hang' || nh === 'ten vthh' || nh === 'ten sp' || nh === 'dien giai')) tenIdx = idx;
+            if (dvtIdx === -1 && (nh.includes('don vi') || nh.includes('dvt'))) dvtIdx = idx;
+            if (tonIdx === -1 && (nh.includes('ton cuoi') || nh.includes('kha dung') || nh.includes('so luong ton') || nh.includes('ton kho') || nh.includes('sl ton') || nh === 'ton')) tonIdx = idx;
+            if (giaIdx === -1 && !nh.includes('von') && !nh.includes('mua') && !nh.includes('thanh tien') && !nh.includes('gia tri') && (nh.includes('don gia ban 1') || nh.includes('gia ban 1'))) giaIdx = idx;
+        });
+
+        // Ưu tiên 2 cho Giá bán MISA
+        if (giaIdx === -1) {
+            locKhoHeadersMobile.forEach((h, idx) => {
+                const nh = removeAccents(h);
+                if (giaIdx === -1 && !nh.includes('von') && !nh.includes('mua') && !nh.includes('thanh tien') && !nh.includes('gia tri') && !nh.includes('co dinh') && !nh.includes('gan nhat') && (nh.includes('don gia ban') || nh.includes('gia ban') || nh.includes('niem yet'))) giaIdx = idx;
+            });
+        }
+
+        // Fallbacks
+        if (maIdx === -1) {
+            locKhoHeadersMobile.forEach((h, idx) => {
+                const nh = removeAccents(h);
+                if (maIdx === -1 && nh.includes('ma') && !nh.includes('vach') && !nh.includes('nhom') && !nh.includes('kho')) maIdx = idx;
+            });
+        }
+        if (tenIdx === -1) {
+            locKhoHeadersMobile.forEach((h, idx) => {
+                const nh = removeAccents(h);
+                if (tenIdx === -1 && nh.includes('ten') && !nh.includes('nhom') && !nh.includes('kho')) tenIdx = idx;
+            });
+        }
+        if (tonIdx === -1) {
+            locKhoHeadersMobile.forEach((h, idx) => {
+                const nh = removeAccents(h);
+                if (tonIdx === -1 && nh.includes('so luong') && !nh.includes('dau ky') && !nh.includes('nhap') && !nh.includes('xuat')) tonIdx = idx;
+            });
+        }
+        if (giaIdx === -1) {
+            locKhoHeadersMobile.forEach((h, idx) => {
+                const nh = removeAccents(h);
+                if (giaIdx === -1 && !nh.includes('von') && !nh.includes('mua') && !nh.includes('nhap') && !nh.includes('xuat') && !nh.includes('ton') && !nh.includes('thanh tien') && !nh.includes('gia tri') && (nh.includes('don gia') || nh.includes('gia'))) giaIdx = idx;
+            });
+        }
+
+        if (maIdx !== -1) document.getElementById('selectLocKhoMa').value = String(maIdx);
+        if (tenIdx !== -1) document.getElementById('selectLocKhoTen').value = String(tenIdx);
+        if (tonIdx !== -1) document.getElementById('selectLocKhoTon').value = String(tonIdx);
+        if (giaIdx !== -1) document.getElementById('selectLocKhoGia').value = String(giaIdx);
+        if (dvtIdx !== -1) document.getElementById('selectLocKhoDvt').value = String(dvtIdx);
+    }
+
+    function applyLocKhoFilterMobile() {
+        const maIdx = parseInt(document.getElementById('selectLocKhoMa').value);
+        const tenIdx = parseInt(document.getElementById('selectLocKhoTen').value);
+        const tonIdx = parseInt(document.getElementById('selectLocKhoTon').value);
+        const giaIdx = parseInt(document.getElementById('selectLocKhoGia').value);
+        const dvtIdx = parseInt(document.getElementById('selectLocKhoDvt').value);
+        const defTax = parseFloat(document.getElementById('selectLocKhoThue').value) || 8.0;
+
+        const chkGroup = document.getElementById('chkLocKhoGroup');
+        const groupDup = chkGroup ? chkGroup.checked : true;
+
+        if (tonIdx === -1 || giaIdx === -1) {
+            return;
+        }
+
+        // Tìm cột thuế suất trong file MISA nếu có
+        let taxColIdx = -1;
+        locKhoHeadersMobile.forEach((h, idx) => {
+            const nh = removeAccents(h);
+            if (taxColIdx === -1 && (nh.includes('thue') || nh.includes('vat'))) taxColIdx = idx;
+        });
+
+        const summaryKw = ['tong cong', 'cong', 'tong', 'total', 'grand total', 'cong nhom', 'tong nhom', 'ma hang', 'ma vthh', 'ten hang', 'ten vthh', 'so luong'];
+
+        let items = [];
+        let rejected = [];
+        let cntTrong = 0;
+        let cntKhongTon = 0;
+        let cntTonAm = 0;
+        let cntKhongGia = 0;
+
+        rawLocKhoRowsMobile.forEach((row) => {
+            let ma = (maIdx !== -1 && row[maIdx] !== undefined && row[maIdx] !== null) ? String(row[maIdx]).trim() : "";
+            if (['nan', 'none', 'null'].includes(ma.toLowerCase())) ma = "";
+            if (ma.endsWith('.0') && !isNaN(ma.slice(0, -2))) ma = ma.slice(0, -2);
+
+            let ten = (tenIdx !== -1 && row[tenIdx] !== undefined && row[tenIdx] !== null) ? String(row[tenIdx]).trim() : "";
+            if (['nan', 'none', 'null'].includes(ten.toLowerCase())) ten = "";
+
+            let dvt = (dvtIdx !== -1 && row[dvtIdx]) ? String(row[dvtIdx]).trim() : "Cái";
+            if (!dvt || ['nan', 'none', 'null'].includes(dvt.toLowerCase())) dvt = "Cái";
+
+            let ton = parseSignedNumberMobile(row[tonIdx]);
+            let gia = parseSignedNumberMobile(row[giaIdx]);
+
+            let rowTax = defTax;
+            if (taxColIdx !== -1 && row[taxColIdx] != null && String(row[taxColIdx]).trim() !== '') {
+                const ts = String(row[taxColIdx]).replace('%', '').trim().replace(',', '.');
+                const parsedT = parseFloat(ts);
+                if (!isNaN(parsedT)) {
+                    rowTax = (parsedT > 0 && parsedT < 1) ? Math.round(parsedT * 10000) / 100 : parsedT;
+                }
+            }
+
+            const maNorm = removeAccents(ma).toLowerCase().trim();
+            const tenNorm = removeAccents(ten).toLowerCase().trim();
+            const isSummary = summaryKw.includes(maNorm) || summaryKw.includes(tenNorm) || maNorm.startsWith('tong cong') || tenNorm.startsWith('tong cong');
+
+            // 1. Xóa bỏ dòng trống / thiếu Mã hoặc Tên / dòng tổng cộng cuối bảng MISA
+            if (!ma || !ten || isSummary) {
+                cntTrong++;
+                rejected.push({
+                    ma: ma || "(Trống)",
+                    ten: ten || "(Trống)",
+                    dvt,
+                    stock: ton !== null ? ton : 0,
+                    price: gia !== null ? gia : 0,
+                    tax: rowTax,
+                    reason: isSummary ? "🗑️ Dòng tổng cộng" : "🗑️ Trống Mã/Tên",
+                    group: "TRONG"
+                });
+                return;
+            }
+
+            // 2. Xóa bỏ dòng Không có tồn (= 0 hoặc trống)
+            if (ton === null || ton === 0) {
+                cntKhongTon++;
+                rejected.push({
+                    ma,
+                    ten,
+                    dvt,
+                    stock: 0,
+                    price: gia !== null ? gia : 0,
+                    tax: rowTax,
+                    reason: "⚠️ Không có tồn (=0)",
+                    group: "KHONG_TON"
+                });
+                return;
+            }
+
+            // 3. Xóa bỏ dòng Tồn bị âm (< 0)
+            if (ton < 0) {
+                cntTonAm++;
+                rejected.push({
+                    ma,
+                    ten,
+                    dvt,
+                    stock: ton,
+                    price: gia !== null ? gia : 0,
+                    tax: rowTax,
+                    reason: `❌ Tồn âm (${ton})`,
+                    group: "TON_AM"
+                });
+                return;
+            }
+
+            // 4. Xóa bỏ dòng Không có giá bán (<= 0 hoặc trống)
+            if (gia === null || gia <= 0) {
+                cntKhongGia++;
+                rejected.push({
+                    ma,
+                    ten,
+                    dvt,
+                    stock: ton,
+                    price: gia !== null ? gia : 0,
+                    tax: rowTax,
+                    reason: "🚫 Không có giá bán",
+                    group: "KHONG_GIA"
+                });
+                return;
+            }
+
+            items.push({ ma, ten, dvt, stock: ton, price: gia, tax: rowTax });
+        });
+
+        // Gộp mã trùng hợp lệ
+        if (groupDup) {
+            let map = new Map();
+            items.forEach(it => {
+                if (map.has(it.ma)) {
+                    let cur = map.get(it.ma);
+                    cur.stock += it.stock;
+                } else {
+                    map.set(it.ma, { ...it });
+                }
+            });
+            items = Array.from(map.values());
+        }
+
+        filteredLocKhoRowsMobile = items;
+        rejectedLocKhoRowsMobile = rejected;
+
+        const totalRaw = rawLocKhoRowsMobile.length;
+        const validCount = items.length;
+        const totalRejected = cntTrong + cntKhongTon + cntTonAm + cntKhongGia;
+
+        document.getElementById('kpiLocKhoTong').innerText = totalRaw.toLocaleString() + " dòng";
+        document.getElementById('kpiLocKhoKhaDung').innerText = validCount.toLocaleString() + " SP";
+        document.getElementById('kpiLocKhoXoaTrong').innerText = cntTrong.toLocaleString() + " dòng";
+        document.getElementById('kpiLocKhoXoaKhongTon').innerText = cntKhongTon.toLocaleString() + " dòng";
+        document.getElementById('kpiLocKhoXoaTonAm').innerText = cntTonAm.toLocaleString() + " dòng";
+        document.getElementById('kpiLocKhoXoaKhongGia').innerText = cntKhongGia.toLocaleString() + " dòng";
+
+        log(`[+] Lọc Kho MISA: Giữ lại ${validCount} SP hợp lệ | Đã xóa bỏ ${totalRejected} dòng lỗi (Trống: ${cntTrong}, Không tồn: ${cntKhongTon}, Tồn âm: ${cntTonAm}, Không giá: ${cntKhongGia})`);
+
+        renderLocKhoTableMobile(document.getElementById('inputSearchLocKho') ? document.getElementById('inputSearchLocKho').value : "");
+    }
+
+    function renderLocKhoTableMobile(filterText = "") {
+        const tbody = document.getElementById('locKhoTbody');
+        if (!tbody) return;
+        tbody.innerHTML = "";
+
+        const viewSel = document.getElementById('selectLocKhoViewMode');
+        const mode = viewSel ? viewSel.value : 'VALID';
+        const thLast = document.getElementById('thLocKhoLastCol');
+
+        let list = [];
+        if (mode === 'VALID') {
+            if (thLast) thLast.innerText = "Giá bán 1";
+            list = filteredLocKhoRowsMobile;
+        } else {
+            if (thLast) thLast.innerText = "Lý do xóa";
+            list = rejectedLocKhoRowsMobile || [];
+            if (mode !== 'ALL_REJECTED') {
+                list = list.filter(it => it.group === mode);
+            }
+        }
+
+        if (filterText) {
+            const normFilter = removeAccents(filterText).toLowerCase();
+            list = list.filter(it => removeAccents(it.ma).toLowerCase().includes(normFilter) || removeAccents(it.ten).toLowerCase().includes(normFilter));
+        }
+
+        const limit = Math.min(250, list.length);
+        for (let i = 0; i < limit; i++) {
+            const it = list[i];
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+            const lastCellHtml = (mode === 'VALID')
+                ? `<td style="padding:5px 8px; color:#38bdf8; text-align:right;">${it.price.toLocaleString()} đ</td>`
+                : `<td style="padding:5px 8px; color:#f87171; text-align:right; font-weight:600;">${it.reason}</td>`;
+            const stockColor = it.stock > 0 ? '#4ade80' : (it.stock < 0 ? '#f87171' : '#fbbf24');
+            tr.innerHTML = `
+                <td style="padding:5px 8px; color:#cbd5e1; font-family:monospace;">${it.ma}</td>
+                <td style="padding:5px 8px; color:#f8fafc;">${it.ten}</td>
+                <td style="padding:5px 8px; color:${stockColor}; text-align:right;">${it.stock.toLocaleString()}</td>
+                ${lastCellHtml}
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    function useFilteredAsMisaMobile() {
+        if (!filteredLocKhoRowsMobile || filteredLocKhoRowsMobile.length === 0) {
+            alert("Chưa có mặt hàng MISA hợp lệ nào để nạp! Vui lòng chọn file tồn kho MISA trước.");
+            return;
+        }
+
+        // Gán trực tiếp vào misaDataRows của tab Tạo Hóa Đơn (đúng chuẩn thuộc tính taxRate)
+        misaDataRows = filteredLocKhoRowsMobile.map(it => ({
+            ma: it.ma,
+            ten: it.ten,
+            dvt: it.dvt,
+            stock: it.stock,
+            price: it.price,
+            taxRate: it.tax,
+            origStock: it.stock,
+            daXuat: 0
+        }));
+
+        // Đồng bộ tạo misaRawWorkbook sạch (đã xóa bỏ hoàn toàn các dòng lỗi) để xuất file MISA_DaTruTonKho chuẩn
+        const cleanAoa = [
+            ["Mã hàng", "Tên hàng", "Đơn vị tính chính", "Số lượng tồn", "Đơn giá bán 1", "Thuế suất", "Thành tiền tồn"]
+        ];
+        filteredLocKhoRowsMobile.forEach(it => {
+            cleanAoa.push([it.ma, it.ten, it.dvt, it.stock, it.price, it.tax + "%", it.stock * it.price]);
+        });
+        const cleanWs = XLSX.utils.aoa_to_sheet(cleanAoa);
+        const cleanWb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(cleanWb, cleanWs, "TON_KHO_MISA");
+        misaRawWorkbook = cleanWb;
+        misaActiveSheetName = "TON_KHO_MISA";
+        misaHeaderIdx = 0;
+        misaMaColIdx = 0;
+        misaStockColIdx = 3;
+        misaStockColName = "Số lượng tồn";
+
+        const fileNameEl = document.getElementById("misaFileName");
+        if (fileNameEl) {
+            fileNameEl.innerText = (locKhoFileNameMobile ? "✔ MISA Đã Lọc: " + locKhoFileNameMobile : "✔ MISA Đã Lọc Sạch") + ` (${misaDataRows.length} SP)`;
+            fileNameEl.classList.add("loaded");
+        }
+        const kpiStockEl = document.getElementById("kpiMisaStock");
+        if (kpiStockEl) {
+            kpiStockEl.innerText = misaDataRows.length.toLocaleString() + " mặt hàng";
+        }
+
+        const rejectedCount = rejectedLocKhoRowsMobile ? rejectedLocKhoRowsMobile.length : 0;
+        log(`[✔] ĐÃ NẠP ${misaDataRows.length} MẶT HÀNG MISA ĐÃ LỌC SẠCH (Đã xóa bỏ ${rejectedCount} dòng lỗi)!`);
+        alert(`ĐÃ LỌC SẠCH & NẠP KHO MISA THÀNH CÔNG!\n\n• Mặt hàng MISA hợp lệ giữ lại: ${misaDataRows.length.toLocaleString()} SP\n• Đã xóa bỏ các dòng không hợp lệ: ${rejectedCount.toLocaleString()} dòng\n\nBây giờ bạn chỉ cần chọn File Kiot và bấm "BẮT ĐẦU TẠO HÓA ĐƠN"!`);
+
+        // Chuyển về Tab Tạo Hóa Đơn
+        switchMainTabMobile('taohd');
+    }
+
+    function downloadCleanKhoExcelMobile() {
+        if (!filteredLocKhoRowsMobile || filteredLocKhoRowsMobile.length === 0) {
+            alert("Chưa có dữ liệu MISA hợp lệ để xuất file!");
+            return;
+        }
+        const aoa = [
+            ["Mã hàng", "Tên hàng", "Đơn vị tính chính", "Số lượng tồn", "Đơn giá bán 1", "Thuế suất", "Thành tiền tồn"]
+        ];
+        filteredLocKhoRowsMobile.forEach(it => {
+            aoa.push([it.ma, it.ten, it.dvt, it.stock, it.price, it.tax + "%", it.stock * it.price]);
+        });
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "TON_KHO_MISA_HOP_LE");
+
+        const now = new Date();
+        const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth() + 1).padStart(2, '0') + now.getFullYear();
+        downloadExcelFile(wb, `MISA_TonKho_DaLocSach_${dateStr}.xlsx`);
+    }
+
+    function resetLocKhoMobile() {
+        rawLocKhoRowsMobile = [];
+        filteredLocKhoRowsMobile = [];
+        rejectedLocKhoRowsMobile = [];
+        locKhoFileNameMobile = "";
+        document.getElementById("locKhoFileNameBadge").innerText = "(Hỗ trợ 1 hoặc nhiều file MISA .xlsx, .xls, .csv)";
+        document.getElementById("locKhoColMapBox").style.display = "none";
+        document.getElementById("locKhoActionBox").style.display = "none";
+        document.getElementById("locKhoSearchBox").style.display = "none";
+        document.getElementById("locKhoTableBox").style.display = "none";
+        document.getElementById('kpiLocKhoTong').innerText = "0 dòng";
+        document.getElementById('kpiLocKhoKhaDung').innerText = "0 SP";
+        document.getElementById('kpiLocKhoXoaTrong').innerText = "0 dòng";
+        document.getElementById('kpiLocKhoXoaKhongTon').innerText = "0 dòng";
+        document.getElementById('kpiLocKhoXoaTonAm').innerText = "0 dòng";
+        document.getElementById('kpiLocKhoXoaKhongGia').innerText = "0 dòng";
+        document.getElementById('locKhoTbody').innerHTML = "";
+        log("[*] Đã làm mới Tab Lọc Kho MISA.");
+    }
+
     // -----------------------------------------------------------------
     // TÍNH NĂNG GOM & SẮP XẾP FILE HÓA ĐƠN TRÊN MOBILE
     // -----------------------------------------------------------------
@@ -2753,35 +3437,42 @@ try {
 
     function switchMainTabMobile(tab) {
         const viewTao = document.getElementById('viewTaoHoadon');
+        const viewLoc = document.getElementById('viewLocKho');
         const viewGom = document.getElementById('viewGomFile');
         const btnTao = document.getElementById('btnTabTaoHd');
+        const btnLoc = document.getElementById('btnTabLocKho');
         const btnGom = document.getElementById('btnTabGomFile');
 
-        if (tab === 'gomfile') {
-            if (viewTao) viewTao.style.display = 'none';
-            if (viewGom) viewGom.style.display = 'block';
-            if (btnTao) {
-                btnTao.style.background = 'transparent';
-                btnTao.style.color = '#94a3b8';
-                btnTao.style.boxShadow = 'none';
+        [viewTao, viewLoc, viewGom].forEach(v => { if (v) v.style.display = 'none'; });
+        [btnTao, btnLoc, btnGom].forEach(b => {
+            if (b) {
+                b.style.background = 'transparent';
+                b.style.color = '#94a3b8';
+                b.style.boxShadow = 'none';
             }
+        });
+
+        const activeStyle = 'linear-gradient(135deg, #0284c7, #0369a1)';
+        if (tab === 'lockho') {
+            if (viewLoc) viewLoc.style.display = 'block';
+            if (btnLoc) {
+                btnLoc.style.background = activeStyle;
+                btnLoc.style.color = '#ffffff';
+                btnLoc.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
+            }
+        } else if (tab === 'gomfile') {
+            if (viewGom) viewGom.style.display = 'block';
             if (btnGom) {
-                btnGom.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+                btnGom.style.background = activeStyle;
                 btnGom.style.color = '#ffffff';
                 btnGom.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
             }
         } else {
             if (viewTao) viewTao.style.display = 'block';
-            if (viewGom) viewGom.style.display = 'none';
             if (btnTao) {
-                btnTao.style.background = 'linear-gradient(135deg, #0284c7, #0369a1)';
+                btnTao.style.background = activeStyle;
                 btnTao.style.color = '#ffffff';
                 btnTao.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
-            }
-            if (btnGom) {
-                btnGom.style.background = 'transparent';
-                btnGom.style.color = '#94a3b8';
-                btnGom.style.boxShadow = 'none';
             }
         }
     }
@@ -2949,8 +3640,13 @@ try {
         return bestIdx;
     }
 
-    async function handleMergeFilesMobile(input) {
-        const files = Array.from(input.files || []);
+    async function handleMergeFilesMobile(inputOrFiles) {
+        let files = [];
+        if (inputOrFiles instanceof FileList || Array.isArray(inputOrFiles)) {
+            files = Array.from(inputOrFiles);
+        } else if (inputOrFiles && inputOrFiles.files) {
+            files = Array.from(inputOrFiles.files);
+        }
         if (files.length === 0) return;
 
         let allRows = [];
@@ -3531,6 +4227,90 @@ try {
     checkLicense();
     updateFileNameBadges();
     initAdminFeatures();
+
+    // -----------------------------------------------------------------
+    // HỖ TRỢ KÉO THẢ FILE TRỰC TIẾP (HTML5 DRAG & DROP)
+    // -----------------------------------------------------------------
+    function initDragAndDropMobile() {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+            window.addEventListener(evt, e => e.preventDefault(), false);
+            document.body.addEventListener(evt, e => e.preventDefault(), false);
+        });
+
+        function setupZone(elemId, onDropCallback) {
+            const el = document.getElementById(elemId);
+            if (!el) return;
+
+            ['dragenter', 'dragover'].forEach(evt => {
+                el.addEventListener(evt, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    el.classList.add('drag-over');
+                }, false);
+            });
+
+            ['dragleave', 'dragend'].forEach(evt => {
+                el.addEventListener(evt, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    el.classList.remove('drag-over');
+                }, false);
+            });
+
+            el.addEventListener('drop', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                el.classList.remove('drag-over');
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    onDropCallback(dt.files);
+                }
+            }, false);
+        }
+
+        setupZone('kiotDropZone', files => {
+            if (files[0]) handleKiotFile(files[0]);
+        });
+
+        setupZone('misaDropZone', files => {
+            if (files[0]) handleMisaFile(files[0]);
+        });
+
+        setupZone('locKhoDropZone', files => {
+            if (files && files.length > 0) handleLocKhoFileMobile(files);
+        });
+
+        setupZone('gomDropZone', files => {
+            if (files && files.length > 0) handleMergeFilesMobile(files);
+        });
+
+        // Toàn bộ app-container cũng nhận diện thông minh khi thả file
+        const container = document.querySelector('.app-container');
+        if (container) {
+            container.addEventListener('dragover', e => e.preventDefault(), false);
+            container.addEventListener('drop', e => {
+                const dt = e.dataTransfer;
+                if (!dt || !dt.files || dt.files.length === 0) return;
+                const files = dt.files;
+
+                const viewGom = document.getElementById('viewGomFile');
+                if ((viewGom && viewGom.style.display !== 'none') || files.length > 1) {
+                    switchMainTabMobile('gomfile');
+                    handleMergeFilesMobile(files);
+                    return;
+                }
+
+                const fname = files[0].name.toLowerCase();
+                if (fname.includes('misa') || fname.includes('ton') || fname.includes('kho') || fname.includes('vthh')) {
+                    handleMisaFile(files[0]);
+                } else {
+                    handleKiotFile(files[0]);
+                }
+            }, false);
+        }
+    }
+
+    initDragAndDropMobile();
 </script>
 
 </body>

@@ -1,6 +1,6 @@
 {
-  "version": "2.17",
-  "release_date": "23/10/2026",
-  "changelog": "- TÍNH NĂNG MỚI: Chỉ lấy đơn giá bán ra từ cột 'Đơn giá bán 1' (hoặc Đơn giá bán) chuẩn từ kho MISA, tuyệt đối không lấy giá vốn hay giá mua.\n- Lọc sạch 100% mặt hàng trống giá: Tự động phát hiện và bỏ qua các mặt hàng không có đơn giá hoặc đơn giá <= 0.\n- Bảng xem trước & bộ đếm KPI: Hiển thị minh bạch số lượng mặt hàng có giá bán hợp lệ sẵn sàng xuất hóa đơn.\n- Triệt tiêu 100% sai số: Cân bằng toán học chính xác từng đồng 0đ khớp hoàn toàn với hóa đơn KiotViet gốc.\n- Đồng bộ toàn diện 100% tính năng giữa bản PC và Mobile.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.17/PM_HoaDon.zip"
+  "version": "2.18",
+  "release_date": "01/11/2026",
+  "changelog": "- TÍNH NĂNG MỚI: Tab Lọc Tồn Kho MISA - Sử dụng file tồn kho của MISA, tự động xóa bỏ hoàn toàn các file/dòng không hợp lệ: Dòng trống (thiếu Mã/Tên), Không có tồn (= 0), Tồn bị âm (< 0), Không có giá bán.\n- Thống kê trực quan chi tiết từng nhóm dòng lỗi đã xóa bỏ và hỗ trợ xem đối chiếu danh sách dòng bị loại.\n- 1-Click Xuất file tồn kho MISA đã lọc sạch (.xlsx) & 1-Click Nạp thẳng làm file MISA tạo hóa đơn.\n- TÍNH NĂNG MỚI: Tích hợp Kéo & Thả file trực tiếp (Drag & Drop) siêu tiện lợi trên cả bản PC Windows và Web/Mobile App.\n- Kéo thả hàng loạt nhiều file cùng lúc vào Tab Gom Hóa Đơn để tự động gộp và sắp xếp theo thời gian.\n- Tối ưu hóa hiển thị High-DPI sắc nét 100% trên Windows 10/11.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.18/PM_HoaDon.zip"
 }
