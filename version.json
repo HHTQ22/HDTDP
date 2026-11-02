@@ -1,6 +1,6 @@
 {
-  "version": "2.18",
-  "release_date": "01/11/2026",
-  "changelog": "- TÍNH NĂNG MỚI: Tab Lọc Tồn Kho MISA - Sử dụng file tồn kho của MISA, tự động xóa bỏ hoàn toàn các file/dòng không hợp lệ: Dòng trống (thiếu Mã/Tên), Không có tồn (= 0), Tồn bị âm (< 0), Không có giá bán.\n- Thống kê trực quan chi tiết từng nhóm dòng lỗi đã xóa bỏ và hỗ trợ xem đối chiếu danh sách dòng bị loại.\n- 1-Click Xuất file tồn kho MISA đã lọc sạch (.xlsx) & 1-Click Nạp thẳng làm file MISA tạo hóa đơn.\n- TÍNH NĂNG MỚI: Tích hợp Kéo & Thả file trực tiếp (Drag & Drop) siêu tiện lợi trên cả bản PC Windows và Web/Mobile App.\n- Kéo thả hàng loạt nhiều file cùng lúc vào Tab Gom Hóa Đơn để tự động gộp và sắp xếp theo thời gian.\n- Tối ưu hóa hiển thị High-DPI sắc nét 100% trên Windows 10/11.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.18/PM_HoaDon.zip"
+  "version": "2.18.1",
+  "release_date": "02/11/2026",
+  "changelog": "- Tối ưu hóa gói cài đặt và cập nhật PC: Chỉ đóng gói gọn gàng file chạy PM_HoaDon.exe và thư mục _internal, tự động dọn dẹp các file .txt hướng dẫn thừa ở thư mục gốc trên máy khách.\n- TÍNH NĂNG MỚI: Tab Lọc Tồn Kho MISA - Tự động xóa bỏ hoàn toàn các dòng không hợp lệ: Dòng trống (thiếu Mã/Tên), Không có tồn (= 0), Tồn bị âm (< 0), Không có giá bán.\n- 1-Click Xuất file tồn kho MISA đã lọc sạch (.xlsx) & 1-Click Nạp thẳng làm file MISA tạo hóa đơn.\n- Tích hợp Kéo & Thả file trực tiếp (Drag & Drop) siêu tiện lợi trên cả bản PC Windows và Web/Mobile App.\n- Tối ưu hóa hiển thị High-DPI sắc nét 100% trên Windows 10/11.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.18.1/PM_HoaDon.zip"
 }
