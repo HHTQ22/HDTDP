@@ -1,6 +1,6 @@
 {
-  "version": "2.19",
+  "version": "2.19.1",
   "release_date": "02/11/2026",
-  "changelog": "- Tab Lọc Tồn Kho MISA: Bổ sung chế độ chọn Thuế VAT 'Tất cả (0, 5, 8, 10%)' (mặc định giữ nguyên đầy đủ mức thuế suất 0%, 5%, 8%, 10%... của từng mặt hàng trong file MISA), tùy chọn lọc riêng từng mức thuế ('Chỉ lọc thuế 8%/10%/5%/0%') hoặc gán đồng loạt ('Áp tất cả = 8%/10%/5%/0%').\n- Sửa lỗi nhận diện cột thuế trên file Danh sách hàng hóa dịch vụ MISA: Tự động lấy chính xác cột 'Thuế suất GTGT (%)' và loại trừ cột 'Là đơn giá sau thuế'.\n- Thiết kế lại giao diện Lọc Tồn Kho MISA & khung điều khiển siêu gọn gàng: Hiển thị trọn vẹn 100% các nút bấm, cột chọn, ô lọc Thuế VAT, thanh thống kê và bảng dữ liệu ngay ở cửa sổ bình thường không cần phải phóng to toàn màn hình.",
+  "changelog": "- Tab Lọc Tồn Kho MISA: Loại bỏ mức thuế 0% trong phần lọc (chỉ giữ lại 3 mức thuế chuẩn 5%, 8%, 10%: 'Tất cả (5%, 8%, 10%)', 'Chỉ lọc thuế 8%/10%/5%', 'Áp tất cả = 8%/10%/5%'). Các ô trống hoặc 0% tự động chuyển về 8%.\n- Sửa lỗi nhận diện cột thuế trên file Danh sách hàng hóa dịch vụ MISA: Tự động lấy chính xác cột 'Thuế suất GTGT (%)' và loại trừ cột 'Là đơn giá sau thuế'.\n- Thiết kế lại giao diện Lọc Tồn Kho MISA & khung điều khiển siêu gọn gàng: Hiển thị trọn vẹn 100% các nút bấm, cột chọn, ô lọc Thuế VAT, thanh thống kê và bảng dữ liệu ngay ở cửa sổ bình thường.",
   "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.19/PM_HoaDon.zip"
 }

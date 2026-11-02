@@ -465,7 +465,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.19)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.19.1)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -771,16 +771,13 @@
                     <div>
                         <label style="font-size:10px; color:#94a3b8;">Thuế VAT:</label>
                         <select id="selectLocKhoThue" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()">
-                            <option value="ALL_8">Tất cả (0, 5, 8, 10%)</option>
-                            <option value="ALL_0">Tất cả (Trống = 0%)</option>
+                            <option value="ALL_8">Tất cả (5%, 8%, 10%)</option>
                             <option value="FILTER_8">Chỉ lọc thuế 8%</option>
                             <option value="FILTER_10">Chỉ lọc thuế 10%</option>
                             <option value="FILTER_5">Chỉ lọc thuế 5%</option>
-                            <option value="FILTER_0">Chỉ lọc thuế 0%</option>
                             <option value="FORCE_8">Áp tất cả = 8%</option>
                             <option value="FORCE_10">Áp tất cả = 10%</option>
                             <option value="FORCE_5">Áp tất cả = 5%</option>
-                            <option value="FORCE_0">Áp tất cả = 0%</option>
                         </select>
                     </div>
                 </div>
@@ -2572,7 +2569,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.19";
+    const CURRENT_VERSION = "2.19.1";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
@@ -3143,10 +3140,10 @@ try {
         const s = String(val).trim();
         if (!s || ['nan', 'none', 'null'].includes(s.toLowerCase())) return defaultRate;
         const sNorm = removeAccents(s).toLowerCase().trim();
-        if (['kct', 'kkknt', 'khong chiu thue', 'khong ke khai', '0%', '0', 'khong', 'mien thue'].includes(sNorm)) return 0.0;
+        if (['kct', 'kkknt', 'khong chiu thue', 'khong ke khai', '0%', '0', 'khong', 'mien thue'].includes(sNorm)) return defaultRate;
         const sClean = sNorm.replace(/%/g, '').replace(/gtgt/g, '').replace(/vat/g, '').trim().replace(',', '.');
         const num = parseFloat(sClean);
-        if (isNaN(num) || num < 0) return defaultRate;
+        if (isNaN(num) || num <= 0) return defaultRate;
         return (num > 0 && num < 1) ? Math.round(num * 10000) / 100 : Math.round(num * 100) / 100;
     }
 
@@ -3161,13 +3158,11 @@ try {
         let defTax = 8.0;
         let taxFilterOnly = null;
         let taxForceAll = null;
-        if (taxMode === 'ALL_0') {
-            defTax = 0.0;
-        } else if (taxMode.startsWith('FILTER_')) {
-            taxFilterOnly = parseFloat(taxMode.replace('FILTER_', '')) || 0.0;
+        if (taxMode.startsWith('FILTER_')) {
+            taxFilterOnly = parseFloat(taxMode.replace('FILTER_', '')) || 8.0;
             defTax = taxFilterOnly;
         } else if (taxMode.startsWith('FORCE_')) {
-            taxForceAll = parseFloat(taxMode.replace('FORCE_', '')) || 0.0;
+            taxForceAll = parseFloat(taxMode.replace('FORCE_', '')) || 8.0;
             defTax = taxForceAll;
         }
 
