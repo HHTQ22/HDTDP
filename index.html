@@ -465,7 +465,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.18.1)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.18.3)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -738,102 +738,93 @@
                 <div class="section-title" style="margin-bottom:0;">🔍 Lọc &amp; Làm Sạch Tồn Kho MISA</div>
                 <button type="button" onclick="resetLocKhoMobile()" style="background:#334155; color:#cbd5e1; border:1px solid #475569; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">🧹 Làm Mới</button>
             </div>
-            <p style="font-size:11px; color:#94a3b8; line-height:1.5; margin-bottom:12px;">
-                Sử dụng file tồn kho của MISA: Tự động xóa bỏ hoàn toàn các file/dòng không hợp lệ (<b>dòng trống thiếu Mã-Tên</b>, <b>không có tồn = 0</b>, <b>tồn bị âm &lt; 0</b>, <b>không có giá bán</b>) để lấy danh sách hàng MISA chuẩn xác.
-            </p>
-
-            <!-- Dropzone chọn file tồn kho MISA -->
+            <!-- Dropzone chọn file tồn kho MISA (Gọn gàng) -->
             <input type="file" id="fileLocKhoMobileInput" accept=".xlsx,.xls,.csv" multiple style="display:none;" onchange="handleLocKhoFileMobile(this)">
-            <label for="fileLocKhoMobileInput" id="locKhoDropZone" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin-bottom:12px; padding:14px; border:2px dashed #38bdf8;">
-                <span style="font-size:14px; font-weight:800;">📂 CHỌN HOẶC KÉO THẢ FILE TỒN KHO MISA</span>
-                <span id="locKhoFileNameBadge" style="font-size:11px; opacity:0.85; font-weight:normal;">(Hỗ trợ 1 hoặc nhiều file MISA .xlsx, .xls, .csv)</span>
+            <label for="fileLocKhoMobileInput" id="locKhoDropZone" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; margin-bottom:8px; padding:10px; border:2px dashed #38bdf8;">
+                <span style="font-size:13px; font-weight:800;">📂 CHỌN HOẶC KÉO THẢ FILE TỒN KHO MISA</span>
+                <span id="locKhoFileNameBadge" style="font-size:10px; opacity:0.85; font-weight:normal;">(Tự động xóa: Trống Mã/Tên • Tồn = 0 • Tồn âm • Không giá bán)</span>
             </label>
 
-            <!-- Khung ánh xạ cột MISA thông minh -->
-            <div id="locKhoColMapBox" style="display:none; background:rgba(0,0,0,0.25); border-radius:12px; padding:10px 12px; border:1px solid #334155; margin-bottom:12px;">
-                <div style="font-size:12px; font-weight:700; color:#38bdf8; margin-bottom:8px;">⚙️ Nhận Diện Cột Chuẩn MISA &amp; Quy Tắc Xóa Dòng Lỗi:</div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+            <!-- Khung ánh xạ cột MISA thông minh (3 cột gọn gàng) -->
+            <div id="locKhoColMapBox" style="display:none; background:rgba(0,0,0,0.25); border-radius:10px; padding:8px 10px; border:1px solid #334155; margin-bottom:8px;">
+                <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:6px;">
                     <div>
-                        <label style="font-size:10px; color:#94a3b8;">Cột Mã Hàng MISA:</label>
-                        <select id="selectLocKhoMa" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Mã MISA:</label>
+                        <select id="selectLocKhoMa" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
                     </div>
                     <div>
-                        <label style="font-size:10px; color:#94a3b8;">Cột Tên Hàng Hóa:</label>
-                        <select id="selectLocKhoTen" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Tên Hàng:</label>
+                        <select id="selectLocKhoTen" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
                     </div>
                     <div>
-                        <label style="font-size:10px; color:#94a3b8;">Cột Số Lượng Tồn:</label>
-                        <select id="selectLocKhoTon" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                        <label style="font-size:10px; color:#94a3b8;">Cột SL Tồn:</label>
+                        <select id="selectLocKhoTon" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
                     </div>
                     <div>
-                        <label style="font-size:10px; color:#94a3b8;">Cột Đơn Giá Bán 1:</label>
-                        <select id="selectLocKhoGia" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                        <label style="font-size:10px; color:#94a3b8;">Cột Giá Bán 1:</label>
+                        <select id="selectLocKhoGia" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
                     </div>
                     <div>
                         <label style="font-size:10px; color:#94a3b8;">Cột ĐVT:</label>
-                        <select id="selectLocKhoDvt" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
+                        <select id="selectLocKhoDvt" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()"></select>
                     </div>
                     <div>
-                        <label style="font-size:10px; color:#94a3b8;">Thuế VAT Mặc Định:</label>
-                        <select id="selectLocKhoThue" class="input-ctrl" style="width:100%; padding:4px 6px; font-size:11px;" onchange="applyLocKhoFilterMobile()">
-                            <option value="8">8%</option>
-                            <option value="10">10%</option>
-                            <option value="5">5%</option>
-                            <option value="0">0%</option>
+                        <label style="font-size:10px; color:#94a3b8;">Thuế VAT:</label>
+                        <select id="selectLocKhoThue" class="input-ctrl" style="width:100%; padding:3px 5px; font-size:11px;" onchange="applyLocKhoFilterMobile()">
+                            <option value="ALL_8">Tất cả (0, 5, 8, 10%)</option>
+                            <option value="ALL_0">Tất cả (Trống = 0%)</option>
+                            <option value="FILTER_8">Chỉ lọc thuế 8%</option>
+                            <option value="FILTER_10">Chỉ lọc thuế 10%</option>
+                            <option value="FILTER_5">Chỉ lọc thuế 5%</option>
+                            <option value="FILTER_0">Chỉ lọc thuế 0%</option>
+                            <option value="FORCE_8">Áp tất cả = 8%</option>
+                            <option value="FORCE_10">Áp tất cả = 10%</option>
+                            <option value="FORCE_5">Áp tất cả = 5%</option>
+                            <option value="FORCE_0">Áp tất cả = 0%</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Quy tắc tự động xóa bỏ dòng lỗi -->
-                <div style="background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:8px 10px; font-size:11px; font-weight:600; color:#38bdf8; display:flex; flex-direction:column; gap:5px;">
-                    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:5px;">
-                        <span>🗑️ Tự động xóa bỏ:</span>
-                        <span style="color:#f8fafc;">✖ Trống Mã/Tên</span> •
-                        <span style="color:#fbbf24;">✖ Không có tồn (=0)</span> •
-                        <span style="color:#f87171;">✖ Tồn bị âm (&lt;0)</span> •
-                        <span style="color:#fb7185;">✖ Không có giá bán</span>
-                    </div>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-weight:normal; color:#cbd5e1; margin-top:2px;">
-                        <input type="checkbox" id="chkLocKhoGroup" checked onchange="applyLocKhoFilterMobile()"> Tự động gộp mã hàng trùng (Cộng dồn tồn kho hợp lệ)
-                    </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px; color:#cbd5e1;">
+                    <input type="checkbox" id="chkLocKhoGroup" checked onchange="applyLocKhoFilterMobile()"> Tự động gộp mã hàng trùng (Cộng dồn tồn kho hợp lệ)
+                </label>
+            </div>
+
+            <!-- 6 KPI Mini Cards thống kê gọn trên lưới 3 cột -->
+            <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:8px;">
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">📦 Tổng Dòng</div>
+                    <div id="kpiLocKhoTong" class="kpi-val" style="color:#60cdff; font-size:12px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">✅ Hợp Lệ</div>
+                    <div id="kpiLocKhoKhaDung" class="kpi-val" style="color:#4ade80; font-size:12px;">0 SP</div>
+                </div>
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">🗑️ Trống Mã/Tên</div>
+                    <div id="kpiLocKhoXoaTrong" class="kpi-val" style="color:#94a3b8; font-size:12px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">⚠️ Không Tồn (=0)</div>
+                    <div id="kpiLocKhoXoaKhongTon" class="kpi-val" style="color:#fbbf24; font-size:12px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">❌ Tồn Âm (&lt;0)</div>
+                    <div id="kpiLocKhoXoaTonAm" class="kpi-val" style="color:#f87171; font-size:12px;">0 dòng</div>
+                </div>
+                <div class="kpi-card" style="padding:6px;">
+                    <div class="kpi-title" style="font-size:9px;">🚫 Không Giá Bán</div>
+                    <div id="kpiLocKhoXoaKhongGia" class="kpi-val" style="color:#fb7185; font-size:12px;">0 dòng</div>
                 </div>
             </div>
 
-            <!-- 6 KPI Mini Cards thống kê chi tiết dòng giữ lại & dòng bị xóa -->
-            <div class="kpi-grid" style="grid-template-columns: repeat(2, 1fr); gap:8px; margin-bottom:12px;">
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">📦 Tổng Dòng File MISA</div>
-                    <div id="kpiLocKhoTong" class="kpi-val" style="color:#60cdff; font-size:14px;">0 dòng</div>
-                </div>
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">✅ Hợp Lệ Giữ Lại</div>
-                    <div id="kpiLocKhoKhaDung" class="kpi-val" style="color:#4ade80; font-size:14px;">0 SP</div>
-                </div>
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">🗑️ Xóa: Trống Mã/Tên</div>
-                    <div id="kpiLocKhoXoaTrong" class="kpi-val" style="color:#94a3b8; font-size:13px;">0 dòng</div>
-                </div>
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">⚠️ Xóa: Không Tồn (=0)</div>
-                    <div id="kpiLocKhoXoaKhongTon" class="kpi-val" style="color:#fbbf24; font-size:13px;">0 dòng</div>
-                </div>
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">❌ Xóa: Tồn Bị Âm (&lt;0)</div>
-                    <div id="kpiLocKhoXoaTonAm" class="kpi-val" style="color:#f87171; font-size:13px;">0 dòng</div>
-                </div>
-                <div class="kpi-card" style="padding:9px 8px;">
-                    <div class="kpi-title">🚫 Xóa: Không Giá Bán</div>
-                    <div id="kpiLocKhoXoaKhongGia" class="kpi-val" style="color:#fb7185; font-size:13px;">0 dòng</div>
-                </div>
-            </div>
-
-            <!-- Nút Hành Động 1-Click: Dùng file MISA đã lọc -->
-            <div id="locKhoActionBox" style="display:none; flex-direction:column; gap:8px; margin-bottom:12px;">
-                <button type="button" class="btn-run" style="background:linear-gradient(135deg, #10b981, #059669); box-shadow:0 4px 15px rgba(16,185,129,0.4);" onclick="useFilteredAsMisaMobile()">
-                    🚀 DÙNG FILE MISA ĐÃ LỌC TẠO HÓA ĐƠN
+            <!-- Nút Hành Động 1-Click gọn trên 1 hàng -->
+            <div id="locKhoActionBox" style="display:none; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">
+                <button type="button" class="btn-run" style="background:linear-gradient(135deg, #10b981, #059669); padding:9px 6px; font-size:11px; margin:0;" onclick="useFilteredAsMisaMobile()">
+                    🚀 DÙNG TẠO HÓA ĐƠN
                 </button>
-                <button type="button" class="btn-download btn-download-hoadon" onclick="downloadCleanKhoExcelMobile()">
-                    💾 Tải Về File Tồn Kho MISA Đã Lọc (.xlsx)
+                <button type="button" class="btn-download btn-download-hoadon" style="padding:9px 6px; font-size:11px; margin:0;" onclick="downloadCleanKhoExcelMobile()">
+                    💾 Xuất File Đã Lọc (.xlsx)
                 </button>
             </div>
 
@@ -1497,8 +1488,8 @@ try {
                     if (maIdx === -1 && (['ma', 'ma hang', 'ma vthh', 'ma sp'].includes(cl) || (cl.includes('ma') && !cl.includes('vach')))) maIdx = c;
                     if (tenIdx === -1 && (['ten', 'ten hang', 'ten vthh', 'ten sp'].includes(cl) || cl.includes('ten'))) tenIdx = c;
                     if (dvtIdx === -1 && (['dvt', 'don vi tinh', 'don vi tinh chinh'].includes(cl) || cl.includes('don vi'))) dvtIdx = c;
-                    if (taxIdx === -1 && (cl.includes('thue') || cl.includes('vat'))) taxIdx = c;
                 }
+                taxIdx = findMisaTaxColIdx(headers);
 
                 // Cột đơn giá bán 1 theo thứ tự ưu tiên (Chỉ lấy ở cột bán, TUYỆT ĐỐI không lấy giá vốn)
                 for (let c = 0; c < headers.length; c++) {
@@ -1571,15 +1562,7 @@ try {
                         continue; // Bỏ qua hoàn toàn mặt hàng trống đơn giá hoặc giá <= 0
                     }
                     
-                    let taxRate = 8;
-                    if (taxIdx !== -1 && row[taxIdx] != null) {
-                        const ts = String(row[taxIdx]).trim();
-                        if (ts.includes('%')) taxRate = parseFloat(ts.replace('%', '')) || 0;
-                        else if (!isNaN(parseFloat(ts))) {
-                            const num = parseFloat(ts);
-                            taxRate = num <= 1 ? num * 100 : num;
-                        }
-                    }
+                    let taxRate = taxIdx !== -1 ? parseMisaTaxRateVal(row[taxIdx], 8) : 8;
 
                     if (!mapItems[ma]) {
                         mapItems[ma] = { ma, ten, dvt, stock: 0, taxRate, price };
@@ -2589,7 +2572,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.18.1";
+    const CURRENT_VERSION = "2.18.3";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
@@ -3061,7 +3044,7 @@ try {
         applyLocKhoFilterMobile();
 
         document.getElementById("locKhoColMapBox").style.display = "block";
-        document.getElementById("locKhoActionBox").style.display = "flex";
+        document.getElementById("locKhoActionBox").style.display = "grid";
         document.getElementById("locKhoSearchBox").style.display = "block";
         document.getElementById("locKhoTableBox").style.display = "block";
     }
@@ -3132,13 +3115,61 @@ try {
         if (dvtIdx !== -1) document.getElementById('selectLocKhoDvt').value = String(dvtIdx);
     }
 
+    function findMisaTaxColIdx(headers) {
+        const excludeKw = ['sau thue', 'truoc thue', 'la don gia', 'don gia', 'gia ban', 'thue nk', 'nhap khau', 'thue xk', 'xuat khau', 'ttdb', 'tieu thu dac biet', 'tien thue', 'ma so thue', 'mst', 'giam thue', 'tai khoan', 'tk ', 'tk_', 'bao ve moi truong'];
+        // Ưu tiên 1: Thuế suất GTGT / Thuế GTGT / Thuế VAT
+        for (let i = 0; i < headers.length; i++) {
+            const nh = removeAccents(headers[i]);
+            if (excludeKw.some(ex => nh.includes(ex))) continue;
+            if (['thue suat gtgt', 'thue gtgt', 'thue suat vat', 'thue vat', 'vat (%)', 'thue suat (%)'].some(k => nh.includes(k))) return i;
+        }
+        // Ưu tiên 2: Thuế suất / VAT
+        for (let i = 0; i < headers.length; i++) {
+            const nh = removeAccents(headers[i]);
+            if (excludeKw.some(ex => nh.includes(ex))) continue;
+            if (['thue suat', 'vat', '% thue', 'thue (%)'].some(k => nh.includes(k))) return i;
+        }
+        // Ưu tiên 3: Thuế / Tax
+        for (let i = 0; i < headers.length; i++) {
+            const nh = removeAccents(headers[i]);
+            if (excludeKw.some(ex => nh.includes(ex))) continue;
+            if (nh.includes('thue') || nh.includes('tax')) return i;
+        }
+        return -1;
+    }
+
+    function parseMisaTaxRateVal(val, defaultRate = 8.0) {
+        if (val === undefined || val === null) return defaultRate;
+        const s = String(val).trim();
+        if (!s || ['nan', 'none', 'null'].includes(s.toLowerCase())) return defaultRate;
+        const sNorm = removeAccents(s).toLowerCase().trim();
+        if (['kct', 'kkknt', 'khong chiu thue', 'khong ke khai', '0%', '0', 'khong', 'mien thue'].includes(sNorm)) return 0.0;
+        const sClean = sNorm.replace(/%/g, '').replace(/gtgt/g, '').replace(/vat/g, '').trim().replace(',', '.');
+        const num = parseFloat(sClean);
+        if (isNaN(num) || num < 0) return defaultRate;
+        return (num > 0 && num < 1) ? Math.round(num * 10000) / 100 : Math.round(num * 100) / 100;
+    }
+
     function applyLocKhoFilterMobile() {
         const maIdx = parseInt(document.getElementById('selectLocKhoMa').value);
         const tenIdx = parseInt(document.getElementById('selectLocKhoTen').value);
         const tonIdx = parseInt(document.getElementById('selectLocKhoTon').value);
         const giaIdx = parseInt(document.getElementById('selectLocKhoGia').value);
         const dvtIdx = parseInt(document.getElementById('selectLocKhoDvt').value);
-        const defTax = parseFloat(document.getElementById('selectLocKhoThue').value) || 8.0;
+        const taxMode = document.getElementById('selectLocKhoThue').value || 'ALL_8';
+
+        let defTax = 8.0;
+        let taxFilterOnly = null;
+        let taxForceAll = null;
+        if (taxMode === 'ALL_0') {
+            defTax = 0.0;
+        } else if (taxMode.startsWith('FILTER_')) {
+            taxFilterOnly = parseFloat(taxMode.replace('FILTER_', '')) || 0.0;
+            defTax = taxFilterOnly;
+        } else if (taxMode.startsWith('FORCE_')) {
+            taxForceAll = parseFloat(taxMode.replace('FORCE_', '')) || 0.0;
+            defTax = taxForceAll;
+        }
 
         const chkGroup = document.getElementById('chkLocKhoGroup');
         const groupDup = chkGroup ? chkGroup.checked : true;
@@ -3147,12 +3178,8 @@ try {
             return;
         }
 
-        // Tìm cột thuế suất trong file MISA nếu có
-        let taxColIdx = -1;
-        locKhoHeadersMobile.forEach((h, idx) => {
-            const nh = removeAccents(h);
-            if (taxColIdx === -1 && (nh.includes('thue') || nh.includes('vat'))) taxColIdx = idx;
-        });
+        // Tìm chính xác cột thuế suất GTGT trong file MISA (tránh nhầm cột 'Là đơn giá sau thuế')
+        const taxColIdx = findMisaTaxColIdx(locKhoHeadersMobile);
 
         const summaryKw = ['tong cong', 'cong', 'tong', 'total', 'grand total', 'cong nhom', 'tong nhom', 'ma hang', 'ma vthh', 'ten hang', 'ten vthh', 'so luong'];
 
@@ -3177,14 +3204,7 @@ try {
             let ton = parseSignedNumberMobile(row[tonIdx]);
             let gia = parseSignedNumberMobile(row[giaIdx]);
 
-            let rowTax = defTax;
-            if (taxColIdx !== -1 && row[taxColIdx] != null && String(row[taxColIdx]).trim() !== '') {
-                const ts = String(row[taxColIdx]).replace('%', '').trim().replace(',', '.');
-                const parsedT = parseFloat(ts);
-                if (!isNaN(parsedT)) {
-                    rowTax = (parsedT > 0 && parsedT < 1) ? Math.round(parsedT * 10000) / 100 : parsedT;
-                }
-            }
+            let rowTax = taxForceAll !== null ? taxForceAll : (taxColIdx !== -1 ? parseMisaTaxRateVal(row[taxColIdx], defTax) : defTax);
 
             const maNorm = removeAccents(ma).toLowerCase().trim();
             const tenNorm = removeAccents(ten).toLowerCase().trim();
@@ -3250,6 +3270,21 @@ try {
                     tax: rowTax,
                     reason: "🚫 Không có giá bán",
                     group: "KHONG_GIA"
+                });
+                return;
+            }
+
+            // 5. Nếu chọn "Chỉ lọc thuế X%", loại bỏ các mặt hàng khác mức thuế đó
+            if (taxFilterOnly !== null && Math.abs(rowTax - taxFilterOnly) > 0.01) {
+                rejected.push({
+                    ma,
+                    ten,
+                    dvt,
+                    stock: ton,
+                    price: gia,
+                    tax: rowTax,
+                    reason: `🔎 Khác thuế (${rowTax}% ≠ ${taxFilterOnly}%)`,
+                    group: "KHAC_THUE"
                 });
                 return;
             }

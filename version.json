@@ -1,6 +1,6 @@
 {
-  "version": "2.18.1",
+  "version": "2.18.3",
   "release_date": "02/11/2026",
-  "changelog": "- Tối ưu hóa gói cài đặt và cập nhật PC: Chỉ đóng gói gọn gàng file chạy PM_HoaDon.exe và thư mục _internal, tự động dọn dẹp các file .txt hướng dẫn thừa ở thư mục gốc trên máy khách.\n- TÍNH NĂNG MỚI: Tab Lọc Tồn Kho MISA - Tự động xóa bỏ hoàn toàn các dòng không hợp lệ: Dòng trống (thiếu Mã/Tên), Không có tồn (= 0), Tồn bị âm (< 0), Không có giá bán.\n- 1-Click Xuất file tồn kho MISA đã lọc sạch (.xlsx) & 1-Click Nạp thẳng làm file MISA tạo hóa đơn.\n- Tích hợp Kéo & Thả file trực tiếp (Drag & Drop) siêu tiện lợi trên cả bản PC Windows và Web/Mobile App.\n- Tối ưu hóa hiển thị High-DPI sắc nét 100% trên Windows 10/11.",
+  "changelog": "- Làm gọn toàn diện giao diện Lọc Tồn Kho MISA & khung điều khiển chính: Hiển thị đầy đủ 100% các nút bấm, cột chọn, ô lọc Thuế VAT, thanh tìm kiếm, thống kê và bảng dữ liệu ngay ở cửa sổ bình thường không cần phải phóng to toàn màn hình.\n- Tab Lọc Tồn Kho MISA: Bổ sung tùy chọn Thuế VAT 'Tất cả (0, 5, 8, 10%)' (giữ nguyên toàn bộ mức thuế của từng mặt hàng trong file MISA), tùy chọn lọc riêng từng mức thuế hoặc gán đồng loạt.\n- Sửa lỗi nhận diện cột thuế trên file Danh sách hàng hóa dịch vụ MISA: Tự động lấy đúng cột 'Thuế suất GTGT (%)' và loại trừ cột 'Là đơn giá sau thuế'.",
   "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.18.1/PM_HoaDon.zip"
 }
