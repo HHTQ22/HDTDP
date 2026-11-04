@@ -465,7 +465,7 @@
             <div class="header-icon" id="adminSecretTrigger" style="cursor:pointer; user-select:none;" title="Chạm giữ 2 giây để mở Admin">⚡</div>
             <div class="header-title">
                 <h1>PM TẠO HÓA ĐƠN</h1>
-                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.19.3)</p>
+                <p>KiotViet ➔ MISA ➔ Thuế (Mobile v2.19.4)</p>
             </div>
         </div>
         <div style="display:flex; align-items:center; gap:6px;">
@@ -510,7 +510,11 @@
         </div>
         <div class="kpi-card">
             <div class="kpi-title">📦 Hàng Tồn MISA</div>
-            <div id="kpiMisaStock" class="kpi-val kpi-misa-stock">0 mặt hàng</div>
+            <div style="display:flex; justify-content:space-around; align-items:center; gap:4px;">
+                <div id="kpiMisaStock" class="kpi-val kpi-misa-stock" style="font-size:13px;">0 SP</div>
+                <div style="color:#475569; font-weight:bold;">|</div>
+                <div id="kpiMisaQty" class="kpi-val kpi-misa-stock" style="font-size:13px;">Tồn: 0</div>
+            </div>
         </div>
         <div class="kpi-card">
             <div class="kpi-title">✅ Doanh Thu Đã Tạo</div>
@@ -1571,9 +1575,12 @@ try {
                 }
 
                 misaDataRows = Object.values(mapItems).filter(x => x.stock > 0 && x.price > 0);
-                document.getElementById("kpiMisaStock").innerText = misaDataRows.length.toLocaleString() + " mặt hàng";
+                const totalStockSum = misaDataRows.reduce((acc, cur) => acc + (cur.stock || 0), 0);
+                document.getElementById("kpiMisaStock").innerText = misaDataRows.length.toLocaleString() + " SP";
+                const qtyEl = document.getElementById("kpiMisaQty");
+                if (qtyEl) qtyEl.innerText = "Tồn: " + totalStockSum.toLocaleString();
                 log(`[✔] MISA: Nhận diện thành công cột giá bán '${headers[priceIdx]}' chuẩn từ kho MISA`);
-                log(`[✔] MISA: Đã nạp ${misaDataRows.length} mặt hàng có Đơn giá bán 1 & tồn kho > 0 (Đã bỏ qua ${skippedEmptyPrice} mặt hàng trống giá/giá <= 0)`);
+                log(`[✔] MISA: Đã nạp ${misaDataRows.length} mặt hàng có Đơn giá bán 1 & tồn kho > 0 (Tổng tồn: ${totalStockSum.toLocaleString()} | Đã bỏ qua ${skippedEmptyPrice} mặt hàng trống giá/giá <= 0)`);
                 if (misaDataRows.length === 0) {
                     alert("Tất cả mặt hàng trong file MISA đều không có đơn giá bán hoặc hết hàng!\nVui lòng điền 'Đơn giá bán 1' vào file MISA.");
                     return;
@@ -2552,7 +2559,9 @@ try {
 
         document.getElementById("kpiKiotCount").innerText = "0 HĐ";
         document.getElementById("kpiKiotTotal").innerText = "0 đ";
-        document.getElementById("kpiMisaStock").innerText = "0 mặt hàng";
+        document.getElementById("kpiMisaStock").innerText = "0 SP";
+        const kpiQtyReset = document.getElementById("kpiMisaQty");
+        if (kpiQtyReset) kpiQtyReset.innerText = "Tồn: 0";
         document.getElementById("kpiOutputTotal").innerText = "0 đ";
 
         const pCont = document.getElementById("progressContainer");
@@ -2569,7 +2578,7 @@ try {
         log("[*] Đã làm mới hệ thống. Sẵn sàng nhận file mới.");
     }
 
-    const CURRENT_VERSION = "2.19.3";
+    const CURRENT_VERSION = "2.19.4";
     async function checkMobileUpdate() {
         try {
             const res = await fetch("https://raw.githubusercontent.com/HHTQ22/HDTDP/main/version.json?_t=" + Date.now());
@@ -3407,7 +3416,12 @@ try {
         }
         const kpiStockEl = document.getElementById("kpiMisaStock");
         if (kpiStockEl) {
-            kpiStockEl.innerText = misaDataRows.length.toLocaleString() + " mặt hàng";
+            kpiStockEl.innerText = misaDataRows.length.toLocaleString() + " SP";
+        }
+        const totalCleanStockSum = misaDataRows.reduce((acc, cur) => acc + (cur.stock || 0), 0);
+        const kpiQtyCleanEl = document.getElementById("kpiMisaQty");
+        if (kpiQtyCleanEl) {
+            kpiQtyCleanEl.innerText = "Tồn: " + totalCleanStockSum.toLocaleString();
         }
 
         const rejectedCount = rejectedLocKhoRowsMobile ? rejectedLocKhoRowsMobile.length : 0;

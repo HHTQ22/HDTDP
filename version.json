@@ -1,6 +1,6 @@
 {
-  "version": "2.19.3",
+  "version": "2.19.4",
   "release_date": "04/11/2026",
-  "changelog": "- Sửa lỗi vỡ khung và bóng ma hiển thị khi phóng to thu nhỏ màn hình (Window Resize / Maximize).\n- Cố định giao diện Dark Mode vĩnh viễn, sắc nét và hiện đại.\n- Gói cập nhật PM_HoaDon.zip được tối ưu siêu gọn nhẹ (~400 KB) chỉ chứa file chạy PM_HoaDon.exe.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.19.3/PM_HoaDon.zip"
+  "changelog": "- Nâng cấp ô Hàng Tồn MISA chia đôi hiển thị đồng thời cả Tổng sản phẩm (SP) và Tổng số lượng tồn.\n- Đồng bộ tính toán tổng số lượng tồn của tất cả mặt hàng hợp lệ trên cả bản PC C++ Native và Mobile.\n- Tối ưu hiển thị số lượng tồn co giãn mượt mà theo kích thước cửa sổ.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.19.4/PM_HoaDon.zip"
 }
