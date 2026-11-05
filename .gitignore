@@ -1,0 +1,5 @@
+*.txt
+*.log
+scratch/
+bin/
+obj/
