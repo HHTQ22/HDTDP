@@ -1,6 +1,6 @@
 {
-  "version": "2.20.2",
+  "version": "2.21.0",
   "release_date": "05/11/2026",
-  "changelog": "- Chuẩn hóa quy cách đặt tên file xuất tồn kho thành: TONKHO_XXXXXXXX.xlsx (trong đó XXXXXXXX là ngày tháng năm ddmmyyyy) đồng bộ cho toàn bộ hệ thống (Tạo hóa đơn, Khớp mặt hàng, Lọc kho trên cả PC và Mobile).\n- Đảm bảo tính nhất quán và dễ dàng đối soát khi lưu trữ các file tồn kho kế toán.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.20.2/PM_HoaDon.zip"
+  "changelog": "- Tái cấu trúc toàn diện giao diện sang mô hình Thanh Menu Điều Hướng Dọc Bên Trái (Left Sidebar Navigation).\n- Mỗi Tab là một không gian làm việc độc lập, riêng biệt chiếm trọn 100% diện tích màn hình bên phải: Tạo Hóa Đơn, Khớp Kiot - MISA, Lọc Tồn Kho MISA, Gom File Hóa Đơn, Xem File Kiot, Xem Tồn Kho MISA, Nhật Ký Log.\n- Giao diện siêu thoáng, nút Tab to rõ, làm sáng Tab đang kích hoạt, chống tràn chữ và tối ưu hiển thị danh sách lớn.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.21.0/PM_HoaDon.zip"
 }
