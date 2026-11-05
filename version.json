@@ -1,6 +1,6 @@
 {
-  "version": "2.21.0",
+  "version": "2.21.1",
   "release_date": "05/11/2026",
-  "changelog": "- Tái cấu trúc toàn diện giao diện sang mô hình Thanh Menu Điều Hướng Dọc Bên Trái (Left Sidebar Navigation).\n- Mỗi Tab là một không gian làm việc độc lập, riêng biệt chiếm trọn 100% diện tích màn hình bên phải: Tạo Hóa Đơn, Khớp Kiot - MISA, Lọc Tồn Kho MISA, Gom File Hóa Đơn, Xem File Kiot, Xem Tồn Kho MISA, Nhật Ký Log.\n- Giao diện siêu thoáng, nút Tab to rõ, làm sáng Tab đang kích hoạt, chống tràn chữ và tối ưu hiển thị danh sách lớn.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.21.0/PM_HoaDon.zip"
+  "changelog": "- Tối ưu toàn diện giao diện Thanh Menu Điều Hướng Dọc Bên Trái (Left Sidebar Navigation).\n- Khắc phục triệt để lỗi mã hóa ký tự font tiếng Việt Unicode trên toàn bộ hệ thống Win32 C++.\n- Mỗi tab điều hướng sang trái theo hàng dọc tạo bảng làm việc độc lập 100% diện tích màn hình bên phải: Tạo Hóa Đơn Thuế, Khớp Kiot - MISA, Lọc Tồn Kho MISA, Gom File Hóa Đơn, Xem File Kiot, Xem Tồn Kho MISA, Nhật Ký Hoạt Động.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.21.1/PM_HoaDon.zip"
 }
