@@ -484,14 +484,17 @@
     </div>
 
     <!-- Main Tab Navigation -->
-    <div style="display:flex; gap:6px; margin-bottom:14px; background:#1e293b; padding:4px; border-radius:14px; border:1px solid #334155;">
-        <button id="btnTabTaoHd" type="button" onclick="switchMainTabMobile('taohd')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; box-shadow:0 2px 8px rgba(2,132,199,0.4); transition:all 0.2s;">
+    <div style="display:flex; gap:4px; margin-bottom:14px; background:#1e293b; padding:4px; border-radius:14px; border:1px solid #334155;">
+        <button id="btnTabTaoHd" type="button" onclick="switchMainTabMobile('taohd')" style="flex:1; padding:10px 2px; font-size:10.5px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:linear-gradient(135deg, #0284c7, #0369a1); color:#ffffff; box-shadow:0 2px 8px rgba(2,132,199,0.4); transition:all 0.2s;">
             ⚡ TẠO HÓA ĐƠN
         </button>
-        <button id="btnTabLocKho" type="button" onclick="switchMainTabMobile('lockho')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+        <button id="btnTabKhopHang" type="button" onclick="switchMainTabMobile('khophang')" style="flex:1; padding:10px 2px; font-size:10.5px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+            🎯 KHỚP MẶT HÀNG
+        </button>
+        <button id="btnTabLocKho" type="button" onclick="switchMainTabMobile('lockho')" style="flex:1; padding:10px 2px; font-size:10.5px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
             🔍 LỌC KHO MISA
         </button>
-        <button id="btnTabGomFile" type="button" onclick="switchMainTabMobile('gomfile')" style="flex:1; padding:10px 4px; font-size:11px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
+        <button id="btnTabGomFile" type="button" onclick="switchMainTabMobile('gomfile')" style="flex:1; padding:10px 2px; font-size:10.5px; font-weight:700; border-radius:10px; border:none; cursor:pointer; background:transparent; color:#94a3b8; transition:all 0.2s;">
             📑 GOM FILE HĐ
         </button>
     </div>
@@ -735,7 +738,118 @@
     <!-- END VIEW 1: TẠO HÓA ĐƠN THUẾ -->
 
     <!-- VIEW 2: GOM FILE HÓA ĐƠN -->
-        <!-- TAB 2: LỌC & LÀM SẠCH FILE TỒN KHO MISA -->
+    
+    <!-- VIEW 4: SO KHỚP MẶT HÀNG KIOT - MISA -->
+    <div id="viewKhopHang" style="display:none;">
+        <div class="section-box" style="margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="section-title" style="margin-bottom:0;">🎯 Ghép Nối Mặt Hàng Kiot & Tồn Kho MISA</div>
+                <button type="button" onclick="resetKhopMobile()" style="background:#334155; color:#cbd5e1; border:1px solid #475569; border-radius:8px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;">🧹 Làm Mới</button>
+            </div>
+            <div style="font-size:11px; color:#94a3b8; line-height:1.4; margin-bottom:10px;">
+                Thuật toán <b>Smart Product Matcher</b>: Phân tích ngữ nghĩa từ khóa, phân loại ngành hàng và tự động ghép nối từng mặt hàng hóa đơn Kiot sang sản phẩm tương ứng trong kho MISA có sẵn.
+            </div>
+
+            <!-- 2 Khung chọn file -->
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:8px;">
+                <div>
+                    <input type="file" id="fileKhopKiotInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleKhopKiotFileMobile(this)">
+                    <label for="fileKhopKiotInput" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:8px 6px; border:1px dashed #38bdf8; font-size:11px;">
+                        <span style="font-weight:700;">📂 HĐ Kiot Chi Tiết</span>
+                        <span id="khopKiotBadge" style="font-size:10px; opacity:0.8;">(Chưa chọn)</span>
+                    </label>
+                </div>
+                <div>
+                    <input type="file" id="fileKhopMisaInput" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleKhopMisaFileMobile(this)">
+                    <label for="fileKhopMisaInput" class="btn-run" style="cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:8px 6px; border:1px dashed #34d399; font-size:11px;">
+                        <span style="font-weight:700;">📂 Tồn Kho MISA</span>
+                        <span id="khopMisaBadge" style="font-size:10px; opacity:0.8;">(Chưa chọn)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Tùy chọn khớp -->
+            <div style="background:rgba(0,0,0,0.25); border-radius:10px; padding:8px 10px; border:1px solid #334155; margin-bottom:10px;">
+                <div style="display:grid; grid-template-columns: 1.2fr 1fr; gap:8px; align-items:center;">
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8; font-weight:700; display:block; margin-bottom:2px;">Chế Độ Khớp:</label>
+                        <select id="khopModeMobile" class="input-dark" style="font-size:11px; padding:4px 6px;">
+                            <option value="misa_price" selected>Đơn giá theo MISA (Khuyên dùng)</option>
+                            <option value="kiot_price">Đơn giá theo HĐ Kiot</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="font-size:10px; color:#94a3b8; font-weight:700; display:block; margin-bottom:2px;">Tổng Tiền Mục Tiêu:</label>
+                        <input type="text" id="khopTargetTotalInput" class="input-dark" placeholder="Tự lấy từ Kiot" style="font-size:11px; padding:4px 6px; font-weight:700; color:#38bdf8;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Nút bắt đầu ghép nối -->
+            <button type="button" id="btnRunKhopMobile" onclick="runSmartProductMatchMobile()" class="btn-run" style="padding:11px; font-size:13px; font-weight:800; letter-spacing:0.5px; margin-bottom:10px;">
+                ⚡ BẮT ĐẦU GHÉP NỐI MẶT HÀNG
+            </button>
+
+            <!-- Thống kê kết quả ghép nối -->
+            <div id="khopStatsGrid" class="kpi-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom:10px; display:none;">
+                <div class="kpi-card" style="padding:6px 4px;">
+                    <div class="kpi-title" style="font-size:9px;">Số Mặt Hàng</div>
+                    <div id="khopStatLines" class="kpi-val" style="font-size:12px; color:#38bdf8;">0</div>
+                </div>
+                <div class="kpi-card" style="padding:6px 4px;">
+                    <div class="kpi-title" style="font-size:9px;">Tổng Số Lượng</div>
+                    <div id="khopStatQty" class="kpi-val" style="font-size:12px; color:#34d399;">0</div>
+                </div>
+                <div class="kpi-card" style="padding:6px 4px;">
+                    <div class="kpi-title" style="font-size:9px;">Tổng Tiền Sau VAT</div>
+                    <div id="khopStatTotal" class="kpi-val" style="font-size:12px; color:#fbbf24;">0 đ</div>
+                </div>
+                <div class="kpi-card" style="padding:6px 4px;">
+                    <div class="kpi-title" style="font-size:9px;">Độ Lệch Tiền</div>
+                    <div id="khopStatDiff" class="kpi-val" style="font-size:12px; color:#f87171;">0 đ</div>
+                </div>
+            </div>
+
+            <!-- Các nút thao tác dòng & Xuất Excel -->
+            <div id="khopActionButtons" style="display:none; flex-wrap:wrap; gap:6px; margin-bottom:10px;">
+                <button type="button" onclick="balanceKhopMoneyMobile()" style="flex:1; min-width:130px; background:#0284c7; color:#fff; border:none; padding:8px 6px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">
+                    ⚖️ Cân Bằng Sai Số 0đ
+                </button>
+                <button type="button" onclick="addCustomRowKhopMobile()" style="flex:1; min-width:110px; background:#334155; color:#cbd5e1; border:1px solid #475569; padding:8px 6px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">
+                    ➕ Thêm Hàng
+                </button>
+                <button type="button" onclick="exportKhopExcelMobile()" style="flex:2; min-width:160px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; border:none; padding:8px 8px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; box-shadow:0 2px 6px rgba(16,185,129,0.4);">
+                    💾 XUẤT EXCEL (HĐ + TỒN KHO)
+                </button>
+            </div>
+
+            <!-- Bảng xem trước danh sách đã khớp -->
+            <div id="khopTableContainer" style="display:none; border:1px solid #334155; border-radius:10px; overflow:hidden; background:#0f172a;">
+                <div style="overflow-x:auto; max-height:420px;">
+                    <table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left; color:#cbd5e1;">
+                        <thead style="background:#1e293b; color:#94a3b8; position:sticky; top:0; z-index:2;">
+                            <tr>
+                                <th style="padding:6px 4px; text-align:center;">#</th>
+                                <th style="padding:6px;">Hàng Kiot Gốc</th>
+                                <th style="padding:6px;">Hàng MISA Ghép</th>
+                                <th style="padding:6px; text-align:center;">SL</th>
+                                <th style="padding:6px; text-align:right;">Đơn Giá</th>
+                                <th style="padding:6px; text-align:center;">VAT</th>
+                                <th style="padding:6px; text-align:right;">Thành Tiền Sau VAT</th>
+                                <th style="padding:6px; text-align:center;">Khớp</th>
+                                <th style="padding:6px; text-align:center;">Xóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="khopTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- END VIEW 4: SO KHỚP MẶT HÀNG KIOT - MISA -->
+
+    <!-- TAB 2: LỌC & LÀM SẠCH FILE TỒN KHO MISA -->
     <div id="viewLocKho" style="display:none;">
         <div class="section-box" style="margin-bottom:12px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -3481,14 +3595,16 @@ try {
 
     function switchMainTabMobile(tab) {
         const viewTao = document.getElementById('viewTaoHoadon');
+        const viewKhop = document.getElementById('viewKhopHang');
         const viewLoc = document.getElementById('viewLocKho');
         const viewGom = document.getElementById('viewGomFile');
         const btnTao = document.getElementById('btnTabTaoHd');
+        const btnKhop = document.getElementById('btnTabKhopHang');
         const btnLoc = document.getElementById('btnTabLocKho');
         const btnGom = document.getElementById('btnTabGomFile');
 
-        [viewTao, viewLoc, viewGom].forEach(v => { if (v) v.style.display = 'none'; });
-        [btnTao, btnLoc, btnGom].forEach(b => {
+        [viewTao, viewKhop, viewLoc, viewGom].forEach(v => { if (v) v.style.display = 'none'; });
+        [btnTao, btnKhop, btnLoc, btnGom].forEach(b => {
             if (b) {
                 b.style.background = 'transparent';
                 b.style.color = '#94a3b8';
@@ -3497,7 +3613,14 @@ try {
         });
 
         const activeStyle = 'linear-gradient(135deg, #0284c7, #0369a1)';
-        if (tab === 'lockho') {
+        if (tab === 'khophang') {
+            if (viewKhop) viewKhop.style.display = 'block';
+            if (btnKhop) {
+                btnKhop.style.background = activeStyle;
+                btnKhop.style.color = '#ffffff';
+                btnKhop.style.boxShadow = '0 2px 8px rgba(2,132,199,0.4)';
+            }
+        } else if (tab === 'lockho') {
             if (viewLoc) viewLoc.style.display = 'block';
             if (btnLoc) {
                 btnLoc.style.background = activeStyle;
@@ -4353,6 +4476,578 @@ try {
             }, false);
         }
     }
+
+    // ============================================================================
+// LOGIC TAB 4: SO KHỚP THÔNG MINH MẶT HÀNG KIOTVIET & TỒN KHO MISA (MOBILE)
+// Port 100% thuật toán Smart Product Matcher từ C++ sang JavaScript
+// ============================================================================
+
+const GENERIC_STOP_WORDS = new Set([
+    "chai", "hop", "goi", "thung", "lon", "can", "cai", "chiec", "tui", "loc",
+    "ly", "mau", "cac", "va", "cho", "vi", "size", "loai", "so", "tap", "set",
+    "bo", "co", "khong", "chinh", "hang", "cao", "cap", "moi", "da", "nang",
+    "tien", "loi", "g", "kg", "ml", "lit", "l", "m", "gam", "t", "p", "h",
+    "viet", "nam", "vn", "x", "hv", "sp", "danh", "cho", "nhe", "day", "mong",
+    "nuoc", "khoang", "suoi", "do", "uong", "thuc", "pham", "khay"
+]);
+
+const CATEGORY_RULES = [
+    {
+        name: "mi_pho_chao",
+        priority: ["pho", "mi", "bun", "mien", "hu tieu", "chao", "nui"],
+        negative: ["pho mai", "phong cach"]
+    },
+    {
+        name: "giay_dep",
+        priority: ["suc", "dep", "giay", "guoc", "sandal", "xang dan", "crocs", "boots", "ung"],
+        negative: []
+    },
+    {
+        name: "quan_ao",
+        priority: ["quan", "ao", "vay", "dam", "sooc", "short", "so mi", "khoac", "bo", "jean", "au"],
+        negative: ["ao mua", "khan trai", "nuoc tay", "nuoc giat", "nuoc xa", "nuoc lau", "ta", "bim", "bobby", "huggies", "merries"]
+    },
+    {
+        name: "sua_do_uong",
+        priority: ["sua", "nuoc khoang", "nuoc suoi", "nuoc ngot", "nuoc giai khat", "bia", "tra", "ca phe", "cafe", "dasani", "coca", "pepsi", "redbull", "sting", "aquafina", "th true", "vinamilk", "milo", "kun", "thach bich", "revive"],
+        negative: ["nuoc mam", "nuoc giat", "nuoc rua", "nuoc xa", "nuoc tuong", "sua tam", "sua rua mat", "nuoc lau", "nuoc tay", "ta", "bim"]
+    },
+    {
+        name: "banh_keo_an_vat",
+        priority: ["banh", "keo", "snack", "bim bim", "thach", "xuc xich", "hat dieu", "hat huong duong"],
+        negative: []
+    },
+    {
+        name: "gia_vi_thuc_pham",
+        priority: ["dau an", "nuoc mam", "bot ngot", "hat nem", "muoi", "duong", "tuong", "dau hao", "xi dau", "tieu", "mam"],
+        negative: []
+    },
+    {
+        name: "hoa_my_pham_gia_dung",
+        priority: ["nuoc giat", "nuoc xa", "nuoc lau", "nuoc rua", "dau goi", "sua tam", "kem danh rang", "xa phong", "tay rua", "khan giay", "giay ve sinh"],
+        negative: []
+    }
+];
+
+function stripVietnameseAccents(str) {
+    if (!str) return "";
+    return str.normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .replace(/đ/g, "d").replace(/Đ/g, "D")
+              .toLowerCase()
+              .trim();
+}
+
+function detectProductCategory(normText) {
+    for (const rule of CATEGORY_RULES) {
+        let hasNeg = false;
+        for (const neg of rule.negative) {
+            if (normText.includes(neg)) { hasNeg = true; break; }
+        }
+        if (hasNeg) continue;
+        for (const pri of rule.priority) {
+            if (normText.includes(pri)) return rule.name;
+        }
+    }
+    return "khac";
+}
+
+function extractDistinctiveWords(normText) {
+    const tokens = normText.split(/[^a-z0-9]+/);
+    const s = new Set();
+    for (const tok of tokens) {
+        if (tok.length >= 2 && !GENERIC_STOP_WORDS.has(tok)) {
+            s.add(tok);
+        }
+    }
+    return s;
+}
+
+let khopKiotItems = [];
+let khopMisaItems = [];
+let khopMatchedRows = [];
+let khopTargetTotal = 0;
+
+function resetKhopMobile() {
+    khopKiotItems = [];
+    khopMisaItems = [];
+    khopMatchedRows = [];
+    khopTargetTotal = 0;
+    document.getElementById("khopKiotBadge").innerText = "(Chưa chọn)";
+    document.getElementById("khopMisaBadge").innerText = "(Chưa chọn)";
+    document.getElementById("khopTargetTotalInput").value = "";
+    document.getElementById("khopStatsGrid").style.display = "none";
+    document.getElementById("khopActionButtons").style.display = "none";
+    document.getElementById("khopTableContainer").style.display = "none";
+    document.getElementById("khopTableBody").innerHTML = "";
+    log("[*] Đã làm mới giao diện So Khớp Mặt Hàng.");
+}
+
+function handleKhopKiotFileMobile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            if (json.length < 2) {
+                alert("File HĐ Kiot không có dữ liệu!");
+                return;
+            }
+
+            // Tìm hàng tiêu đề
+            let hIdx = 0;
+            for (let r = 0; r < Math.min(10, json.length); r++) {
+                const rowStr = (json[r] || []).join(" ").toLowerCase();
+                if (rowStr.includes("tên") || rowStr.includes("mặt hàng") || rowStr.includes("thành tiền") || rowStr.includes("giá")) {
+                    hIdx = r;
+                    break;
+                }
+            }
+
+            const headers = (json[hIdx] || []).map(h => (h || "").toString().trim().toLowerCase());
+            let cTen = -1, cMa = -1, cDvt = -1, cSl = -1, cGia = -1, cTt = -1;
+
+            headers.forEach((h, idx) => {
+                if (h.includes("tên") || h.includes("mặt hàng") || h.includes("hàng hóa")) { if (cTen === -1) cTen = idx; }
+                else if (h.includes("mã") && !h.includes("vạch")) { if (cMa === -1) cMa = idx; }
+                else if (h.includes("đvt") || h.includes("đơn vị tính")) { if (cDvt === -1) cDvt = idx; }
+                else if (h.includes("số lượng") || h === "sl") { if (cSl === -1) cSl = idx; }
+                else if (h.includes("đơn giá") || h === "giá") { if (cGia === -1) cGia = idx; }
+                else if (h.includes("thành tiền") || h.includes("tổng tiền")) { if (cTt === -1) cTt = idx; }
+            });
+
+            if (cTen === -1) cTen = 1;
+            if (cTt === -1 && cGia !== -1 && cSl !== -1) cTt = -2;
+
+            khopKiotItems = [];
+            let totalMoney = 0;
+
+            for (let r = hIdx + 1; r < json.length; r++) {
+                const row = json[r];
+                if (!row || row.length === 0) continue;
+                const ten = (row[cTen] || "").toString().trim();
+                if (!ten || ten.toLowerCase().includes("tổng") || ten.toLowerCase().includes("cộng")) continue;
+
+                const ma = cMa >= 0 ? (row[cMa] || "").toString().trim() : "";
+                const dvt = cDvt >= 0 ? (row[cDvt] || "").toString().trim() : "Cái";
+                let sl = cSl >= 0 ? parseFloat((row[cSl] || "1").toString().replace(/,/g, "")) : 1;
+                if (isNaN(sl) || sl <= 0) sl = 1;
+
+                let gia = cGia >= 0 ? parseFloat((row[cGia] || "0").toString().replace(/,/g, "")) : 0;
+                let tt = 0;
+                if (cTt >= 0) {
+                    tt = parseFloat((row[cTt] || "0").toString().replace(/,/g, ""));
+                } else if (cTt === -2) {
+                    tt = sl * gia;
+                }
+                if (isNaN(tt) || tt <= 0) tt = sl * (gia > 0 ? gia : 20000);
+                if (gia <= 0 && sl > 0) gia = tt / sl;
+
+                const norm = stripVietnameseAccents(ten);
+                khopKiotItems.push({
+                    maKiot: ma,
+                    tenKiot: ten,
+                    dvtKiot: dvt,
+                    slKiot: sl,
+                    giaKiot: gia,
+                    thanhTienKiot: tt,
+                    normName: norm,
+                    category: detectProductCategory(norm),
+                    words: extractDistinctiveWords(norm)
+                });
+                totalMoney += tt;
+            }
+
+            khopTargetTotal = totalMoney;
+            document.getElementById("khopKiotBadge").innerText = `(${khopKiotItems.length} SP | ${Math.round(totalMoney).toLocaleString()} đ)`;
+            document.getElementById("khopTargetTotalInput").value = Math.round(totalMoney).toLocaleString();
+            log(`[✔] Đã đọc ${khopKiotItems.length} mặt hàng từ HĐ Kiot (Tổng: ${Math.round(totalMoney).toLocaleString()} đ)`);
+        } catch (err) {
+            alert("Lỗi khi đọc file Kiot: " + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function handleKhopMisaFileMobile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+            if (json.length < 2) {
+                alert("File Tồn Kho MISA không có dữ liệu!");
+                return;
+            }
+
+            let hIdx = 0;
+            for (let r = 0; r < Math.min(10, json.length); r++) {
+                const rowStr = (json[r] || []).join(" ").toLowerCase();
+                if (rowStr.includes("mã") && (rowStr.includes("tên") || rowStr.includes("tồn"))) {
+                    hIdx = r;
+                    break;
+                }
+            }
+
+            const headers = (json[hIdx] || []).map(h => (h || "").toString().trim().toLowerCase());
+            let cMa = -1, cTen = -1, cDvt = -1, cTon = -1, cGia = -1, cVat = -1;
+
+            headers.forEach((h, idx) => {
+                if (h.includes("mã hàng") || h.includes("mã vthh") || (h.includes("mã") && cMa === -1)) cMa = idx;
+                else if (h.includes("tên hàng") || h.includes("tên vthh") || (h.includes("tên") && cTen === -1)) cTen = idx;
+                else if (h.includes("đơn vị tính") || h.includes("đvt")) cDvt = idx;
+                else if (h.includes("tồn") || h.includes("số lượng tồn")) cTon = idx;
+                else if (h.includes("giá bán") || h.includes("đơn giá") || h.includes("giá")) cGia = idx;
+                else if (h.includes("thuế") || h.includes("vat")) cVat = idx;
+            });
+
+            if (cMa === -1) cMa = 0;
+            if (cTen === -1) cTen = 1;
+            if (cTon === -1) cTon = 3;
+
+            khopMisaItems = [];
+            let totalStock = 0;
+
+            for (let r = hIdx + 1; r < json.length; r++) {
+                const row = json[r];
+                if (!row || row.length === 0) continue;
+                const ma = (row[cMa] || "").toString().trim();
+                const ten = (row[cTen] || "").toString().trim();
+                if (!ma || !ten) continue;
+
+                let ton = cTon >= 0 ? parseFloat((row[cTon] || "0").toString().replace(/,/g, "")) : 0;
+                if (isNaN(ton) || ton <= 0) continue;
+
+                let gia = cGia >= 0 ? parseFloat((row[cGia] || "0").toString().replace(/,/g, "")) : 0;
+                if (isNaN(gia)) gia = 0;
+
+                let vat = 8;
+                if (cVat >= 0) {
+                    const vatStr = (row[cVat] || "").toString();
+                    if (vatStr.includes("10")) vat = 10;
+                    else if (vatStr.includes("5")) vat = 5;
+                    else if (vatStr.includes("0")) vat = 0;
+                }
+
+                const norm = stripVietnameseAccents(ten);
+                khopMisaItems.push({
+                    ma: ma,
+                    ten: ten,
+                    dvt: cDvt >= 0 ? (row[cDvt] || "Cái").toString().trim() : "Cái",
+                    ton: ton,
+                    gia: gia,
+                    thue: vat,
+                    normName: norm,
+                    category: detectProductCategory(norm),
+                    words: extractDistinctiveWords(norm)
+                });
+                totalStock += ton;
+            }
+
+            document.getElementById("khopMisaBadge").innerText = `(${khopMisaItems.length} SP | Tồn: ${Math.round(totalStock).toLocaleString()})`;
+            log(`[✔] Đã nạp ${khopMisaItems.length} mặt hàng từ tồn kho MISA (Tổng tồn: ${Math.round(totalStock).toLocaleString()})`);
+        } catch (err) {
+            alert("Lỗi khi đọc file MISA: " + err.message);
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function runSmartProductMatchMobile() {
+    if (khopKiotItems.length === 0) {
+        alert("Vui lòng chọn File HĐ Kiot Chi Tiết trước!");
+        return;
+    }
+    if (khopMisaItems.length === 0) {
+        alert("Vui lòng chọn File Tồn Kho MISA trước!");
+        return;
+    }
+
+    const mode = document.getElementById("khopModeMobile").value;
+    const isMisaPrice = (mode === "misa_price");
+    let targetTotal = parseFloat((document.getElementById("khopTargetTotalInput").value || "0").replace(/,/g, ""));
+    if (isNaN(targetTotal) || targetTotal <= 0) targetTotal = khopTargetTotal;
+
+    const usedStock = {};
+    khopMatchedRows = [];
+
+    // Nhóm MISA theo category và mã
+    const misaByCat = {};
+    const misaByCode = {};
+    khopMisaItems.forEach((m, idx) => {
+        if (!misaByCat[m.category]) misaByCat[m.category] = [];
+        misaByCat[m.category].push(idx);
+        misaByCode[m.ma.toLowerCase()] = idx;
+    });
+
+    for (const kItem of khopKiotItems) {
+        // Tìm ứng viên MISA tốt nhất
+        let bestIdx = -1;
+        let bestScore = -1;
+
+        // 1. Khớp theo mã trực tiếp nếu có
+        if (kItem.maKiot && misaByCode[kItem.maKiot.toLowerCase()] !== undefined) {
+            const mIdx = misaByCode[kItem.maKiot.toLowerCase()];
+            const cand = khopMisaItems[mIdx];
+            const u = usedStock[cand.ma] || 0;
+            if (cand.ton - u > 0) {
+                bestIdx = mIdx;
+                bestScore = 100;
+            }
+        }
+
+        // 2. So khớp từ khóa ngữ nghĩa và ngành hàng
+        if (bestIdx === -1) {
+            let candidates = misaByCat[kItem.category];
+            if (!candidates || candidates.length < 3) {
+                candidates = khopMisaItems.map((_, i) => i);
+            }
+
+            for (const cIdx of candidates) {
+                const cand = khopMisaItems[cIdx];
+                const u = usedStock[cand.ma] || 0;
+                if (cand.ton - u <= 0) continue;
+
+                let score = 0;
+                if (cand.category === kItem.category) score += 30;
+
+                // Đếm từ trùng lặp
+                let matchWords = 0;
+                for (const w of kItem.words) {
+                    if (cand.words.has(w)) matchWords++;
+                }
+                score += matchWords * 25;
+
+                // Thưởng đơn vị tính
+                if (stripVietnameseAccents(cand.dvt) === stripVietnameseAccents(kItem.dvtKiot)) score += 10;
+
+                // Thưởng tồn nhiều
+                score += Math.min(10, Math.log10(cand.ton + 1) * 3);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestIdx = cIdx;
+                }
+            }
+        }
+
+        if (bestIdx === -1) bestIdx = 0;
+        const bestM = khopMisaItems[bestIdx];
+        usedStock[bestM.ma] = (usedStock[bestM.ma] || 0) + 1;
+
+        let donGia = isMisaPrice ? (bestM.gia > 0 ? bestM.gia : 50000) : kItem.giaKiot;
+        let sl = Math.max(1, Math.min(bestM.ton, Math.round(kItem.slKiot)));
+        let tt = Math.round(sl * donGia);
+        let tienThue = Math.round(tt * (bestM.thue / 100.0));
+        let sauVat = tt + tienThue;
+
+        khopMatchedRows.push({
+            stt: khopMatchedRows.length + 1,
+            tenKiot: kItem.tenKiot,
+            maMisa: bestM.ma,
+            tenMisa: bestM.ten,
+            dvt: bestM.dvt,
+            sl: sl,
+            donGia: donGia,
+            thuePct: bestM.thue,
+            thanhTien: tt,
+            tienThue: tienThue,
+            tienSauVat: sauVat,
+            matchScore: Math.round(bestScore)
+        });
+    }
+
+    renderKhopTableMobile();
+    log(`[✔] Đã hoàn thành ghép nối ${khopMatchedRows.length} mặt hàng Kiot -> MISA.`);
+}
+
+function renderKhopTableMobile() {
+    const tbody = document.getElementById("khopTableBody");
+    tbody.innerHTML = "";
+
+    let totalSl = 0;
+    let totalSauVat = 0;
+
+    khopMatchedRows.forEach((r, idx) => {
+        totalSl += r.sl;
+        totalSauVat += r.tienSauVat;
+
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #1e293b";
+        tr.innerHTML = `
+            <td style="padding:6px 4px; text-align:center; color:#94a3b8;">${idx + 1}</td>
+            <td style="padding:6px; font-weight:600; color:#f1f5f9; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${r.tenKiot}</td>
+            <td style="padding:6px; color:#38bdf8; max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                ${r.tenMisa} <span style="font-size:9px; color:#64748b;">(${r.maMisa})</span>
+            </td>
+            <td style="padding:6px; text-align:center;">
+                <input type="number" min="1" value="${r.sl}" onchange="updateKhopRowSlMobile(${idx}, this.value)" style="width:45px; background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; text-align:center; font-size:11px; padding:2px;">
+            </td>
+            <td style="padding:6px; text-align:right;">${Math.round(r.donGia).toLocaleString()}</td>
+            <td style="padding:6px; text-align:center; color:#94a3b8;">${r.thuePct}%</td>
+            <td style="padding:6px; text-align:right; font-weight:700; color:#34d399;">${Math.round(r.tienSauVat).toLocaleString()} đ</td>
+            <td style="padding:6px; text-align:center;">
+                <span style="font-size:10px; padding:2px 6px; border-radius:6px; background:${r.matchScore >= 40 ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.2)'}; color:${r.matchScore >= 40 ? '#34d399' : '#f87171'}; font-weight:700;">
+                    ${r.matchScore >= 40 ? 'Khớp' : 'Thấp'}
+                </span>
+            </td>
+            <td style="padding:6px; text-align:center;">
+                <button type="button" onclick="deleteKhopRowMobile(${idx})" style="background:transparent; border:none; color:#f87171; font-weight:700; cursor:pointer; font-size:13px;" title="Xóa dòng">✕</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    let targetTotal = parseFloat((document.getElementById("khopTargetTotalInput").value || "0").replace(/,/g, ""));
+    if (isNaN(targetTotal) || targetTotal <= 0) targetTotal = khopTargetTotal;
+    const diff = totalSauVat - targetTotal;
+
+    document.getElementById("khopStatLines").innerText = khopMatchedRows.length;
+    document.getElementById("khopStatQty").innerText = totalSl.toLocaleString();
+    document.getElementById("khopStatTotal").innerText = Math.round(totalSauVat).toLocaleString() + " đ";
+    document.getElementById("khopStatDiff").innerText = (diff >= 0 ? "+" : "") + Math.round(diff).toLocaleString() + " đ";
+    document.getElementById("khopStatDiff").style.color = (diff === 0) ? "#34d399" : "#f87171";
+
+    document.getElementById("khopStatsGrid").style.display = "grid";
+    document.getElementById("khopActionButtons").style.display = "flex";
+    document.getElementById("khopTableContainer").style.display = "block";
+}
+
+function updateKhopRowSlMobile(idx, val) {
+    let sl = parseFloat(val);
+    if (isNaN(sl) || sl <= 0) sl = 1;
+    const r = khopMatchedRows[idx];
+    r.sl = sl;
+    r.thanhTien = Math.round(r.sl * r.donGia);
+    r.tienThue = Math.round(r.thanhTien * (r.thuePct / 100.0));
+    r.tienSauVat = r.thanhTien + r.tienThue;
+    renderKhopTableMobile();
+}
+
+function deleteKhopRowMobile(idx) {
+    khopMatchedRows.splice(idx, 1);
+    renderKhopTableMobile();
+}
+
+function balanceKhopMoneyMobile() {
+    if (khopMatchedRows.length === 0) return;
+    let targetTotal = parseFloat((document.getElementById("khopTargetTotalInput").value || "0").replace(/,/g, ""));
+    if (isNaN(targetTotal) || targetTotal <= 0) return;
+
+    let curTotal = khopMatchedRows.reduce((sum, r) => sum + r.tienSauVat, 0);
+    let diff = targetTotal - curTotal;
+    if (diff === 0) {
+        alert("Tổng tiền đã khớp chính xác 100% (Sai số = 0 đ)!");
+        return;
+    }
+
+    // Điều chỉnh số lượng dòng cuối hoặc đơn giá co giãn nhẹ
+    const last = khopMatchedRows[khopMatchedRows.length - 1];
+    const uSau = last.donGia * (1.0 + last.thuePct / 100.0);
+    if (uSau > 0) {
+        const deltaSl = Math.round(diff / uSau);
+        if (deltaSl !== 0 && (last.sl + deltaSl) > 0) {
+            last.sl += deltaSl;
+            last.thanhTien = Math.round(last.sl * last.donGia);
+            last.tienThue = Math.round(last.thanhTien * (last.thuePct / 100.0));
+            last.tienSauVat = last.thanhTien + last.tienThue;
+        }
+    }
+
+    curTotal = khopMatchedRows.reduce((sum, r) => sum + r.tienSauVat, 0);
+    diff = targetTotal - curTotal;
+    if (diff !== 0) {
+        // Co giãn đơn giá dòng cuối để triệt tiêu số dư lẻ
+        const newSau = last.tienSauVat + diff;
+        if (newSau > 0) {
+            const newTt = Math.round(newSau / (1.0 + last.thuePct / 100.0));
+            last.donGia = Math.round(newTt / last.sl);
+            last.thanhTien = Math.round(last.sl * last.donGia);
+            last.tienThue = Math.round(last.thanhTien * (last.thuePct / 100.0));
+            last.tienSauVat = last.thanhTien + last.tienThue;
+        }
+    }
+
+    renderKhopTableMobile();
+    log(`[✔] Đã cân bằng tiền khớp 100% với mục tiêu: ${Math.round(targetTotal).toLocaleString()} đ`);
+}
+
+function addCustomRowKhopMobile() {
+    if (khopMisaItems.length === 0) {
+        alert("Chưa có danh sách tồn kho MISA!");
+        return;
+    }
+    const item = khopMisaItems[Math.floor(Math.random() * khopMisaItems.length)];
+    const donGia = item.gia > 0 ? item.gia : 50000;
+    const tt = donGia * 1;
+    const vat = Math.round(tt * (item.thue / 100.0));
+
+    khopMatchedRows.push({
+        stt: khopMatchedRows.length + 1,
+        tenKiot: item.ten,
+        maMisa: item.ma,
+        tenMisa: item.ten,
+        dvt: item.dvt,
+        sl: 1,
+        donGia: donGia,
+        thuePct: item.thue,
+        thanhTien: tt,
+        tienThue: vat,
+        tienSauVat: tt + vat,
+        matchScore: 100
+    });
+    renderKhopTableMobile();
+}
+
+function exportKhopExcelMobile() {
+    if (khopMatchedRows.length === 0) {
+        alert("Chưa có danh sách ghép nối để xuất Excel!");
+        return;
+    }
+
+    const todayStr = getCleanDateDigits();
+    const wb = XLSX.utils.book_new();
+
+    // Sheet 1: HOADON (17 cột chuẩn Thuế điện tử)
+    const hdHeaders = [
+        "STT", "Ngày HĐ", "Ký hiệu HĐ", "Số HĐ", "Đơn vị mua", "Địa chỉ",
+        "Mã số thuế", "Người mua hàng", "Email", "Hình thức TT", "Mã hàng hóa",
+        "Tên hàng hóa", "Đơn vị tính", "Số lượng", "Đơn giá", "Thuế suất", "Thành tiền"
+    ];
+    const hdData = [hdHeaders];
+    const ngayHd = (document.getElementById("inputNgayHd") ? document.getElementById("inputNgayHd").value : "") || getTodayFormatted();
+
+    khopMatchedRows.forEach((r, idx) => {
+        hdData.push([
+            idx + 1, ngayHd, "1C24TML", "0000001", "", "",
+            "", "Người tiêu dùng", "", "Chuyển khoản", r.maMisa,
+            r.tenMisa, r.dvt, r.sl, r.donGia, `${r.thuePct}%`, r.thanhTien
+        ]);
+    });
+    const wsHd = XLSX.utils.aoa_to_sheet(hdData);
+    XLSX.utils.book_append_sheet(wb, wsHd, "HOADON");
+
+    // Sheet 2: TONKHO
+    const tkHeaders = ["Mã hàng", "Tên hàng", "Đơn vị tính", "Tồn đầu", "Đã xuất", "Tồn cuối"];
+    const tkData = [tkHeaders];
+    khopMatchedRows.forEach(r => {
+        tkData.push([r.maMisa, r.tenMisa, r.dvt, r.sl + 10, r.sl, 10]);
+    });
+    const wsTk = XLSX.utils.aoa_to_sheet(tkData);
+    XLSX.utils.book_append_sheet(wb, wsTk, "TONKHO");
+
+    const outName = `HOADON_KHOP_${todayStr}.xlsx`;
+    downloadExcelFile(wb, outName);
+    log(`[✔] Đã xuất file ghép nối Excel thành công: ${outName}`);
+}
 
     initDragAndDropMobile();
 </script>
