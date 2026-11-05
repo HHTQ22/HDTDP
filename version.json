@@ -1,6 +1,6 @@
 {
-  "version": "2.19.4",
-  "release_date": "04/11/2026",
-  "changelog": "- Nâng cấp ô Hàng Tồn MISA chia đôi hiển thị đồng thời cả Tổng sản phẩm (SP) và Tổng số lượng tồn.\n- Đồng bộ tính toán tổng số lượng tồn của tất cả mặt hàng hợp lệ trên cả bản PC C++ Native và Mobile.\n- Tối ưu hiển thị số lượng tồn co giãn mượt mà theo kích thước cửa sổ.",
-  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.19.4/PM_HoaDon.zip"
+  "version": "2.20.2",
+  "release_date": "05/11/2026",
+  "changelog": "- Chuẩn hóa quy cách đặt tên file xuất tồn kho thành: TONKHO_XXXXXXXX.xlsx (trong đó XXXXXXXX là ngày tháng năm ddmmyyyy) đồng bộ cho toàn bộ hệ thống (Tạo hóa đơn, Khớp mặt hàng, Lọc kho trên cả PC và Mobile).\n- Đảm bảo tính nhất quán và dễ dàng đối soát khi lưu trữ các file tồn kho kế toán.",
+  "download_url": "https://github.com/HHTQ22/HDTDP/releases/download/V2.20.2/PM_HoaDon.zip"
 }

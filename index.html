@@ -2442,7 +2442,7 @@ try {
     }
 
     function getMisaFileName() {
-        return `MISA_DaTruTonKho_${getCleanDateDigits()}.xlsx`;
+        return `TONKHO_${getCleanDateDigits()}.xlsx`;
     }
 
     function updateFileNameBadges() {
@@ -3450,7 +3450,7 @@ try {
 
         const now = new Date();
         const dateStr = String(now.getDate()).padStart(2, '0') + String(now.getMonth() + 1).padStart(2, '0') + now.getFullYear();
-        downloadExcelFile(wb, `MISA_TonKho_DaLocSach_${dateStr}.xlsx`);
+        downloadExcelFile(wb, `TONKHO_${dateStr}.xlsx`);
     }
 
     function resetLocKhoMobile() {
