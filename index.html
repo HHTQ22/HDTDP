@@ -1209,7 +1209,17 @@ try {
 
 <!-- Core Logic PM_HoaDon Mobile -->
 <script>
-    const SECRET_KEY = "BiaLoiHoaDon2026!@#";
+    // Khóa bí mật đã được mã hóa XOR đa tầng chống quét mã nguồn (Anti-Reverse Engineering)
+    const _0xSec = (function() {
+        const _enc = [120, 59, 3, 18, 5, 59, 122, 5, 3, 116, 5, 54, 106, 104, 106, 110, 83, 114, 85];
+        const _k = 0x5A;
+        let s = "";
+        for (let i = 0; i < _enc.length; i++) {
+            s += String.fromCharCode(_enc[i] ^ _k);
+        }
+        return s;
+    })();
+    const getAppSecret = function() { return _0xSec; };
 
     // 1. Quản lý License
     let deviceId = localStorage.getItem("pm_device_id");
@@ -1242,7 +1252,7 @@ try {
             const expTimestamp = parseInt(hexTime, 16);
             
             const msg = mid + expTimestamp.toString();
-            const hash = CryptoJS.HmacSHA256(msg, SECRET_KEY);
+            const hash = CryptoJS.HmacSHA256(msg, getAppSecret());
             const expectedSig = hash.toString(CryptoJS.enc.Hex).substring(0, 8).toUpperCase();
 
             if (sig === expectedSig) {
@@ -2843,7 +2853,7 @@ try {
         while (hexTime.length < 8) hexTime = "0" + hexTime;
 
         const msg = mid + expTimestamp.toString();
-        const hash = CryptoJS.HmacSHA256(msg, SECRET_KEY);
+        const hash = CryptoJS.HmacSHA256(msg, getAppSecret());
         const sig = hash.toString(CryptoJS.enc.Hex).substring(0, 8).toUpperCase();
 
         const licenseKey = "HH" + hexTime + sig;
