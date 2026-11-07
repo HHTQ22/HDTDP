@@ -1,4 +1,4 @@
-# HDTDP - PM Tạo Hóa Đơn (KV -> MS -> T)
+# HDTDP - PM HT (KV -> MS -> T)
 
 Phần mềm tự động hóa đối chiếu số liệu bán hàng
 
